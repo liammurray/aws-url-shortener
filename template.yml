@@ -1,0 +1,145 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Manual approval workflow
+
+Parameters:
+
+  ApiStageName:
+    Type: "String"
+    AllowedPattern: "^[a-z0-9]+$"
+    Default: "dev"
+
+  LogRetentionDays:
+    Type: "Number"
+    Default: 7
+
+
+Globals:
+  Function:
+    Runtime: nodejs10.x
+    Timeout: 10
+    #Tracing: Active
+    Tags:
+      Stack: !Sub ${AWS::StackName}
+    Environment:
+      Variables:
+        TABLE_NAME_URL_ENTRIES: !Sub UrlEntries-${ApiStageName}
+        SERVICE_NAME: UrlShortener
+        # Used when AWS_SAM_LOCAL=true
+        LOCAL_DDB_ENDPOINT: "http://host.docker.internal:8000"
+
+
+Resources:
+
+  ####################################
+  # Dynamo Table
+  #
+  UrlEntries:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub UrlEntries-${ApiStageName}
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      # Should only contain attributes that are used as KeySchema for the table and its indexes
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+
+
+  ####################################
+  # API
+  #
+
+  UrlShortenerApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref ApiStageName
+
+
+  ###############################
+  # IAM (lambda policies)
+  #
+
+  ##
+  # Shared for order api functions
+  #  Added with AmazonDynamoDBFullAccess
+  FunctionPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub "${AWS::StackName}-orders-function"
+      Description: "For orders api functions"
+      Path: "/"
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
+
+
+  ##################################
+  # Log groups so we can set retention policies
+  #
+  UrlFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${UrlFunction}"
+      RetentionInDays: !Ref LogRetentionDays
+
+
+  ##################################
+  # Functions
+  #
+
+  UrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: CRUD access to shortened URL
+      CodeUri: funcs/shorten/lambda
+      Handler: index.urlHandler
+      Policies:
+        - !Ref FunctionPolicy
+        - AmazonDynamoDBFullAccess
+      Events:
+        PostUrl:
+          Type: Api
+          Properties:
+            Path: /url
+            Method: POST
+            RestApiId: !Ref UrlShortenerApi
+        GetUrl:
+          Type: Api
+          Properties:
+            Path: /{shortId}
+            Method: GET
+            RestApiId: !Ref UrlShortenerApi
+
+
+
+Outputs:
+  ApiId:
+    Description: API Gateway ID
+    Value: !Ref UrlShortenerApi
+    Export:
+      Name: !Sub "${AWS::StackName}:ApiId"
+
+  ApiUrl:
+    Description: API endpoint URL
+    Value: !Sub 'https://${UrlShortenerApi}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}/'
+    Export:
+      Name: !Sub "${AWS::StackName}:ApiUrl"
+
+  ApiStage:
+    Description: API Gateway Stage
+    Value: !Ref ApiStageName
+    Export:
+      Name: !Sub "${AWS::StackName}:ApiStage"

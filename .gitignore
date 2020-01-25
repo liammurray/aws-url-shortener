@@ -1,0 +1,13 @@
+.DS_Store
+.vscode
+.terraform/
+.serverless
+*.zip
+*.tfstate
+*.tfstate.*
+.aws-sam
+.packaged.yaml
+node_modules
+dist
+.package
+.eslintcache
