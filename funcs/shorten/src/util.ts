@@ -1,7 +1,8 @@
 import env from 'env-var'
-import { createLogger } from 'bunyan'
+import pino from 'pino'
 
-export const logger = createLogger({
+export const logger = pino({
+  level: process.env.LOG_LEVEL || 'info',
   name: envStr('SERVICE_NAME'),
 })
 
@@ -17,11 +18,7 @@ export function flatMap<A, T>(arr: A[], mapper: (param: A) => T[]): T[] {
   return arr.reduce((prev, x) => prev.concat(mapper(x)), out)
 }
 
-export function arnSlice(
-  arn: string,
-  start?: number | undefined,
-  end?: number | undefined
-) {
+export function arnSlice(arn: string, start?: number | undefined, end?: number | undefined) {
   if (arn == null) return ''
   return arn
     .split(':')

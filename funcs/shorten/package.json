@@ -1,7 +1,7 @@
 {
-  "name": "ordersapi-orders",
+  "name": "urlshortner-shorten",
   "version": "1.0.0",
-  "description": "OrdersAPI orders lambda",
+  "description": "lambda",
   "main": "./index.js",
   "private": true,
   "scripts": {
@@ -25,10 +25,10 @@
     "@aws/dynamodb-data-mapper": "^0.7.3",
     "@aws/dynamodb-data-mapper-annotations": "^0.7.3",
     "aws-embedded-metrics": "^1.0.1",
-    "bunyan": "^1.8.12",
+    "env-var": "^5.2.0",
     "http-status-codes": "^1.4.0",
     "lodash.get": "^4.4.2",
-    "env-var": "^5.2.0"
+    "pino": "^5.16.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.3",
@@ -57,6 +57,7 @@
     "mocha": "^7.0.0",
     "npm-audit-resolver": "^2.2.0",
     "prettier": "^1.19.1",
+    "rimraf": "^3.0.0",
     "ts-mocha": "^6.0.0",
     "ts-node": "^8.6.2",
     "typescript": "^3.7.5"
