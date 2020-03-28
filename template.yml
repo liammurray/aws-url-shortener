@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Manual approval workflow
+  URL shortener
 
 Parameters:
 
@@ -24,6 +24,7 @@ Globals:
       Stack: !Sub ${AWS::StackName}
     Environment:
       Variables:
+        # TODO: TABLE_NAME_URL_ENTRIES: !Ref UrlEntries
         TABLE_NAME_URL_ENTRIES: !Sub UrlEntries-${ApiStageName}
         SERVICE_NAME: UrlShortener
         # Used when AWS_SAM_LOCAL=true
@@ -36,6 +37,7 @@ Resources:
   # Dynamo Table
   #
   UrlEntries:
+    # TODO: simplify and use AWS::Serverless::SimpleTable
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub UrlEntries-${ApiStageName}

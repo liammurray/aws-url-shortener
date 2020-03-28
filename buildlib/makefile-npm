@@ -15,12 +15,11 @@ PACKAGE := .package/$(shell node -p 'const p=require("./package.json"); `$${p.na
 .PHONY: \
 	build \
 	package \
-	clean
+  clean \
+  utest \
+  develop \
 
-build: $(build_files)
-
-lambda: build
-	npm run lambda
+build: dist
 
 package: $(PACKAGE)
 
@@ -28,10 +27,21 @@ clean:
 	npm run build:clean
 	rm -f $(PACKAGE)
 
+utest: node_modules
+	npm run test
+
+# For servers (express server, etc.)
+develop: node_modules
+	npm run start:watch | pino-pretty
+
 node_modules: package.json
 	npm i && touch node_modules
 
-$(build_files): $(source_files) node_modules tsconfig.json
+# For lambda functions
+lambda: build
+	npm run lambda
+
+dist: $(source_files) node_modules tsconfig.json
 	npm run build
 
 $(PACKAGE): $(build_files)
