@@ -1,0 +1,6 @@
+/dist/
+/node_modules/
+.markdownlint.json
+.nyc_output
+.serverless
+package-lock.json

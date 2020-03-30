@@ -1,0 +1,23 @@
+---
+singleQuote: true
+arrowParens: avoid
+printWidth: 100
+trailingComma: es5
+bracketSpacing: true
+jsxBracketSameLine: true
+semi: false
+overrides:
+- files: "*.md"
+  options:
+    parser: markdown
+- files: "*.js"
+  options:
+    parser: flow
+- files: "*.json"
+  options:
+    parser: json
+# - files: "*.py"
+#   options:
+#     parser: python
+
+

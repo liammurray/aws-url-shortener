@@ -1,0 +1,48 @@
+env:
+  node: true
+  es6: true
+  jest: true
+
+extends:
+  - eslint:recommended
+  - plugin:@typescript-eslint/recommended
+  - prettier/@typescript-eslint
+  - plugin:prettier/recommended
+globals:
+  Atomics: readonly
+  SharedArrayBuffer: readonly
+parser: '@typescript-eslint/parser'
+parserOptions:
+  ecmaVersion: 2018
+  sourceType: module
+root: true
+plugins:
+  - '@typescript-eslint'
+rules:
+  quotes:
+    - error
+    - single
+    - allowTemplateLiterals: true
+      avoidEscape: true
+  '@typescript-eslint/no-unused-vars':
+    - warn
+    - vars: all
+      args: after-used
+      ignoreRestSiblings: true
+      argsIgnorePattern: ^_
+  semi:
+    - error
+    - never
+  '@typescript-eslint/member-delimiter-style':
+    - error
+    - multiline:
+        delimiter: none
+        requireLast: false
+      singleline:
+        delimiter: comma
+        requireLast: true
+  '@typescript-eslint/no-this-alias':
+    - error
+    - allowDestructuring: true
+      allowedNames:
+        - self

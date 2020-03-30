@@ -1,0 +1,3 @@
+{
+  "app": "npx ts-node --compiler ttypescript src/main.ts"
+}
