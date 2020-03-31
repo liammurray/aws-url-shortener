@@ -7,4 +7,4 @@ GITHUB_OWNER=liammurray
 STACK_NAME = urlShortener
 PACKAGE_OUTPUT_BUCKET = nod15c.lambda
 
-include ./buildlib/makefile-sam
+include ./buildlib/sam.mk

@@ -1,3 +1,3 @@
 # -*- mode: Makefile -*-
 #
-include ../../buildlib/makefile-npm
+include ../../buildlib/npm.mk

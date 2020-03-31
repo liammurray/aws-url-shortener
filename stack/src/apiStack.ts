@@ -117,6 +117,9 @@ export default class ApiStack extends cdk.Stack {
       },
     })
 
+    // sam logs -tn <funcName>
+    new cdk.CfnOutput(this, funcName, { value: func.functionName })
+
     table.grantReadWriteData(func)
 
     return func
