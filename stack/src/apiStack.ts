@@ -24,6 +24,7 @@ export default class ApiStack extends cdk.Stack {
     if (!props.stage.match(stagePat)) {
       throw new Error(`Stage '${props.stage}' does not match pattern: ${stagePat}`)
     }
+
     const table = this.createUrlEntriesTable(props.stage)
 
     // TOTO
@@ -36,13 +37,11 @@ export default class ApiStack extends cdk.Stack {
     // Good docs:
     //   https://docs.aws.amazon.com/cdk/api/latest/python/aws_cdk.aws_apigateway.README.html
     //
-    const func = this.createLambda(table, 'urlFunc', 'index.urlHandler')
-    const funcIntegration = new apigateway.LambdaIntegration(func)
 
     const regionCertArn = `arn:aws:acm:${props.env.region}:${props.env.account}:certificate/${props.certId}`
     const certificate = certman.Certificate.fromCertificateArn(this, 'cert', regionCertArn)
 
-    const api = new apigateway.RestApi(this, 'urlsApi', {
+    const api = new apigateway.RestApi(this, 'UrlsApi', {
       restApiName: 'Url Shortener Service',
       deployOptions: {
         stageName: props.stage,
@@ -56,8 +55,11 @@ export default class ApiStack extends cdk.Stack {
       description: 'Generates and serves shortened URL aliases.',
     })
 
+    const func = this.createLambda(table, 'UrlFunc', 'index.urlHandler')
+    const funcIntegration = new apigateway.LambdaIntegration(func)
+
     // ##> /
-    api.root.addMethod('POST', new apigateway.LambdaIntegration(func))
+    api.root.addMethod('POST', funcIntegration)
     addCorsOptions(api.root)
 
     // ##> /:rootId
@@ -67,8 +69,7 @@ export default class ApiStack extends cdk.Stack {
 
     const rec = this.addRoute53(props.dnsName, api)
 
-    // TODO outputs
-    // A manually named output
+    // Outputs (nice)
     new cdk.CfnOutput(this, 'ApiId', {
       value: api.restApiId,
     })
@@ -118,7 +119,8 @@ export default class ApiStack extends cdk.Stack {
     })
 
     // sam logs -tn <funcName>
-    new cdk.CfnOutput(this, funcName, { value: func.functionName })
+    const outputName = `${funcName}Id`
+    new cdk.CfnOutput(this, outputName, { value: func.functionName })
 
     table.grantReadWriteData(func)
 

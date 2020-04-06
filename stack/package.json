@@ -41,6 +41,9 @@
     "@aws-cdk/aws-dynamodb": "^1.31.0",
     "@aws-cdk/aws-lambda": "^1.31.0",
     "@aws-cdk/core": "1.31.0",
+    "dot-env": "0.0.1",
+    "dotenv": "^8.2.0",
+    "env-var": "^6.0.4",
     "source-map-support": "^0.5.16"
   }
 }

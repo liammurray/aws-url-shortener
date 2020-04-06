@@ -1,10 +1,18 @@
 # -*- mode: Makefile -*-
 #
 
-# Use GIT_TOKEN else GITHUB_PERSONAL_PACKAGE_TOKEN
-GIT_TOKEN?=$(GITHUB_PERSONAL_PACKAGE_TOKEN)
-GITHUB_OWNER=liammurray
-STACK_NAME = urlShortener
-PACKAGE_OUTPUT_BUCKET = nod15c.lambda
+.PHONY: \
+	log-urls-func
 
-include ./buildlib/sam.mk
+# Should match name in ./stack directory
+STACK_NAME = urls-api
+PACKAGE_OUTPUT_BUCKET = nod15c.lambda
+export MAKETOOLS=$(realpath ../maketools)
+GEN_DIR=./generated
+# Turns off commands that use SAM template commands
+USE_CDK=true
+include $(MAKETOOLS)/sam.mk
+
+log-urls-func:
+	$(eval ID=$(shell ./getOut.sh $(STACK_NAME) UrlFuncId))
+	sam logs -tn $(ID)

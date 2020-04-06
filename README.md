@@ -2,27 +2,38 @@
 
 Simple API GW url shortener service example using:
 
-- AWS SAM
-  - Uses makefiles to compile typescript instead of SAM build
+- AWS SAM/CDK
 - Typesript
 - DynamoDb using [dynamodb-datamapper-js](https://github.com/awslabs/dynamodb-data-mapper-js)
 
-Shortened URL example:
+## Dependencies
 
-`http://nod15c.com/1gpgLAJ`
+Install `maketools` one level up. (See reference in Makefile.)
+
+Note: You could also just use SAM command with SAM template (skip makefiles)
 
 ## Quickstart
 
+See [CDK README](./stack/README.md) to set `.env` to use CDK. This way will create DNS entry and setup certificate.
+
+This is enabled by default. See Makefile in this directory.
+
+The following will build and deploy.
+
 ```bash
 make deploy
-#TODO (dns and auth)
-curl -X POST  https://dev-api.nod15c.com/urls?url=https://www.google.com
+curl -X POST  https://u.example.com?url=https://www.google.com
+```
+
+To just build
+
+```bash
+make build
 ```
 
 ## TODO
 
-- Support custom name as in: `http://nod15c.com/custom_name`
-- CDK
+- Support custom name as in: `http://u.example.com/custom_name`
 - Validate submitted URL
 - Expiration
 - Frontend (React)

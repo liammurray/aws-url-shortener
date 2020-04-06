@@ -10,6 +10,9 @@ test('Empty Stack', () => {
       region: 'us-west-2',
       account: 'xyz',
     },
+    certId: 'certid',
+    dnsName: 'u.example.com',
+    stage: 'dev',
   })
   // THEN
   expectCDK(stack).to(
