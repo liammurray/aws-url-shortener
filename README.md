@@ -8,7 +8,13 @@ Simple API GW url shortener service example using:
 
 ## Dependencies
 
-Install `maketools` one level up. (See reference in Makefile.)
+Get makefile helpers (e.g., parallel to this project)
+
+```bash
+git clone https://github.com/liammurray/maketools.git
+```
+
+Edit Makefile so MAKETOOLS points to this:
 
 Note: You could also just use SAM command with SAM template (skip makefiles)
 
