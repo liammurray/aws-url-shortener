@@ -14,9 +14,12 @@ export interface ApiStackProps extends cdk.StackProps {
   readonly dnsName: string
   readonly env: cdk.Environment
   readonly stage: string
+  readonly autoAlias?: boolean
 }
 
 export default class ApiStack extends cdk.Stack {
+  private props: ApiStackProps
+
   constructor(scope: cdk.Construct, id: string, props: ApiStackProps) {
     super(scope, id, props)
 
@@ -25,7 +28,10 @@ export default class ApiStack extends cdk.Stack {
       throw new Error(`Stage '${props.stage}' does not match pattern: ${stagePat}`)
     }
 
-    const table = this.createUrlEntriesTable(props.stage)
+    this.props = props
+
+
+    const table = this.createUrlEntriesTable()
 
     // TOTO
     //  schema https://github.com/aws/aws-cdk/issues/1461
@@ -55,7 +61,9 @@ export default class ApiStack extends cdk.Stack {
       description: 'Generates and serves shortened URL aliases.',
     })
 
-    const func = this.createLambda(table, 'UrlFunc', 'index.urlHandler')
+    const ver = new Date().toISOString()
+
+    const func = this.createLambda(table, 'UrlFunc', 'index.urlHandler', ver)
     const funcIntegration = new apigateway.LambdaIntegration(func)
 
     // ##> /
@@ -100,7 +108,7 @@ export default class ApiStack extends cdk.Stack {
       }),
     })
   }
-  createLambda(table: dynamodb.Table, funcName: string, handler: string) {
+  createLambda(table: dynamodb.Table, funcName: string, handler: string, ver: string) {
     const lambdaDist = path.resolve(__dirname, '../../funcs/shorten/lambda')
     const code = lambda.Code.fromAsset(lambdaDist)
     const func = new lambda.Function(this, funcName, {
@@ -118,6 +126,14 @@ export default class ApiStack extends cdk.Stack {
       },
     })
 
+    if (this.props.autoAlias) {
+      const version = func.addVersion(ver);
+      new lambda.Alias(this, `${funcName}Alias`, {
+        aliasName: this.props.stage,
+        version,
+      });
+    }
+
     // sam logs -tn <funcName>
     const outputName = `${funcName}Id`
     new cdk.CfnOutput(this, outputName, { value: func.functionName })
@@ -127,9 +143,9 @@ export default class ApiStack extends cdk.Stack {
     return func
   }
 
-  createUrlEntriesTable(stage: string) {
+  createUrlEntriesTable() {
     const dev = true
-    const tableName = `UrlEntries-${stage}`
+    const tableName = `UrlEntries-${this.props.stage}`
     const removalPolicy = dev ? cdk.RemovalPolicy.DESTROY : cdk.RemovalPolicy.RETAIN
     return new dynamodb.Table(this, 'urls', {
       tableName,

@@ -14,5 +14,5 @@ USE_CDK=true
 include $(MAKETOOLS)/sam.mk
 
 log-urls-func:
-	$(eval ID=$(shell ./getOut.sh $(STACK_NAME) UrlFuncId))
+	$(eval ID=$(shell $(MAKETOOLS)/getStackOutputVal.sh $(STACK_NAME) UrlFuncId))
 	sam logs -tn $(ID)
