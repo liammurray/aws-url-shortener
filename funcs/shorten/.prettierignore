@@ -1,0 +1,5 @@
+lambda/
+node_modules/
+.nyc_output/
+.serverless/
+package-lock.json

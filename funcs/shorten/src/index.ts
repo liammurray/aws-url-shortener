@@ -8,8 +8,12 @@ import HttpStatus from 'http-status-codes'
 
 logger.info({ env: process.env }, 'Loading function')
 
-function getHeaders(hasBody: boolean, contentType = 'application/json') {
-  let headers: { [key: string]: string } = {
+type Headers = { [key: string]: string }
+type Body = { [key: string]: any }
+type Response = { [key: string]: any }
+
+function getHeaders(hasBody: boolean, _contentType = 'application/json'): Headers {
+  let headers: Headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers':
       'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token',
@@ -24,7 +28,11 @@ function getHeaders(hasBody: boolean, contentType = 'application/json') {
 /**
  * https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-output-format
  */
-function makeResponse(body: Object | undefined, statusCode: number = HttpStatus.OK, err?: any) {
+function makeResponse(
+  body: Body | undefined,
+  statusCode: number = HttpStatus.OK,
+  err?: any
+): Response {
   const bod = body ? { body: JSON.stringify(body) } : undefined
   const response = {
     statusCode,
@@ -35,7 +43,7 @@ function makeResponse(body: Object | undefined, statusCode: number = HttpStatus.
   return response
 }
 
-function makeRedirectResponse(url: string) {
+function makeRedirectResponse(url: string): Response {
   const response = {
     statusCode: 302,
     headers: {
@@ -58,25 +66,10 @@ function getOptStr(ob: Object, key: string): string {
   return _get(ob, key)
 }
 
-type HandlerMap = { [key: string]: (event: APIGatewayEvent) => Promise<any> }
-const handlerMap: HandlerMap = {
-  GET: redirect,
-  POST: createShortUrlEntry,
-}
-
-/**
- * Lambda CRUD entry point
- */
-export function urlHandler(event: APIGatewayEvent) {
-  const handler = handlerMap[event.httpMethod]
-  if (handler) {
-    return handler(event)
-  }
-  return makeResponse(undefined, HttpStatus.FORBIDDEN)
-}
-
 export async function createShortUrlEntry(event: APIGatewayEvent) {
-  let url, custom
+  let url: string
+  let custom: string
+
   try {
     // TODO validate url
     url = getStr(event, 'queryStringParameters.url')
@@ -121,4 +114,21 @@ export async function redirect(event: APIGatewayEvent) {
   } catch (err) {
     return makeResponse({}, HttpStatus.INTERNAL_SERVER_ERROR, err)
   }
+}
+
+type HandlerMap = { [key: string]: (event: APIGatewayEvent) => Promise<any> }
+const handlerMap: HandlerMap = {
+  GET: redirect,
+  POST: createShortUrlEntry,
+}
+
+/**
+ * Lambda CRUD entry point
+ */
+export function urlHandler(event: APIGatewayEvent) {
+  const handler = handlerMap[event.httpMethod]
+  if (handler) {
+    return handler(event)
+  }
+  return makeResponse(undefined, HttpStatus.FORBIDDEN)
 }

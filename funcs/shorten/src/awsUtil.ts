@@ -5,7 +5,7 @@ import { envStr } from './util'
 // Generic AWS SDK utils
 //
 
-function ensureRegion(region?: string) {
+function ensureRegion(region?: string): string {
   return region || envStr('AWS_REGION')
 }
 
@@ -29,7 +29,7 @@ export function createSSM(region?: string): AWS.SSM {
 
 const ssmClient = createSSM()
 
-export async function getSecureJsonParam(path: string) {
+export async function getSecureJsonParam(path: string): Promise<string> {
   const res = await ssmClient.getParameter({ Name: path, WithDecryption: true }).promise()
   if (res && res.Parameter && res.Parameter.Value && res.Parameter.Type === 'SecureString') {
     return JSON.parse(res.Parameter.Value)

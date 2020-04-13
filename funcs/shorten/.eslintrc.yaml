@@ -1,43 +1,59 @@
-
-  parser: '@typescript-eslint/parser'
-  root: true
-  parserOptions:
-    ecmaVersion: 2018,
-    sourceType: module
-  plugins:
-    - '@typescript-eslint'
-  env:
-    es6: true,
-    node: true,
-  extends:
-    - eslint:recommended
-    - plugin:@typescript-eslint/recommended
-    - prettier/@typescript-eslint
-    - plugin:prettier/recommended
-  rules:
-    quotes:
-      - error
-      - single
-      - allowTemplateLiterals: true
-        avoidEscape: true
-    semi:
-      - error
-      - never
-    '@typescript-eslint/member-delimiter-style':
-      - error
-      - multiline:
-          delimiter: comma
-          requireLast: false
-      - singleline:
-          delimiter: 'comma',
-          requireLast: false,
-    '@typescript-eslint/no-this-alias':
-      - error
-      - allowDestructuring: true
-        allowedNames:
-          - self
-
-
-
+env:
+  node: true
+  es6: true
+extends:
+  - eslint:recommended
+  - plugin:@typescript-eslint/recommended
+  - prettier/@typescript-eslint
+  # Must be last
+  - plugin:prettier/recommended
+ignorePatterns:
+  - node_modules/**
+  - dist/**
+  - lambda/**
+globals:
+  Atomics: readonly
+  SharedArrayBuffer: readonly
+parser: '@typescript-eslint/parser'
+parserOptions:
+  ecmaVersion: 2018
+  sourceType: module
+root: true
+plugins:
+  - '@typescript-eslint'
+  - prettier
+rules:
+  quotes:
+    - error
+    - single
+    - allowTemplateLiterals: true
+      avoidEscape: true
+  '@typescript-eslint/no-unused-vars':
+    - warn
+    - vars: all
+      args: after-used
+      ignoreRestSiblings: true
+      argsIgnorePattern: ^_
+  semi:
+    - error
+    - never
+  '@typescript-eslint/member-delimiter-style':
+    - error
+    - multiline:
+        delimiter: none
+        requireLast: true
+      singleline:
+        delimiter: comma
+        requireLast: false
+  '@typescript-eslint/no-this-alias':
+    - error
+    - allowDestructuring: true
+      allowedNames:
+        - self
+  # Enable these and fix
+  '@typescript-eslint/explicit-function-return-type':
+    - warn
+  '@typescript-eslint/ban-types':
+    - warn
 
 

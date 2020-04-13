@@ -6,7 +6,7 @@ for (let idx = 0; idx < CHARS.length; ++idx) {
   map[CHARS[idx]] = idx
 }
 
-export function decodeBase62(encoded: string) {
+export function decodeBase62(encoded: string): number {
   const base = CHARS.length
   let out = 0
   for (const c of encoded) {
@@ -20,7 +20,7 @@ export function decodeBase62(encoded: string) {
   return out
 }
 
-export function encodeBase62(val: number) {
+export function encodeBase62(val: number): string {
   const base = CHARS.length
   const out: string[] = []
   do {
