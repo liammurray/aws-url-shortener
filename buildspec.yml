@@ -35,7 +35,7 @@ phases:
       #- npm run cdk synth urls-api-live
 
 artifacts:
-  base-directory: "$CODEBUILD_SRC_DIR_src/infra/cdk-out"
+  base-directory: infra/cdk.out
   files:
     - urls-api*.template.json
 
