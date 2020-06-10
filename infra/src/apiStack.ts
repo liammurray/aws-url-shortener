@@ -10,6 +10,8 @@ import { addCorsOptions } from './apiGatewayUtils'
 import * as path from 'path'
 
 export interface ApiStackProps extends cdk.StackProps {
+  // Required for route53 hosted zone lookup
+  readonly env: cdk.Environment
   readonly certId: string
   readonly domain: string
   readonly prefix: string
