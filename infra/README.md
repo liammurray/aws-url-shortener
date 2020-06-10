@@ -1,36 +1,49 @@
 # Url shortener CDK
 
-## Quickstart
+This directory deploys:
 
-Create a `.env`
+    - Build pipeline for CI/CD that deploys API
+    - API itself
 
-```bash
-ACCOUNT="<account>"
-REGION="us-west-2"
-CERT_ID="<id>"
-DNS_NAME="u.example.com"
-STAGE="dev"
-```
+## Build the lambda function code
 
-Deploy (from root). It will build lambdas and run cdk command for you.
+The code is referenced by the CDK stack for the API created in this directory.
 
 ```bash
-make deploy
+cd ..
+make build
+make utest
 ```
 
-The make deploy step runs `cdk deploy` in this directory. See makefile.
+## Setup environment
 
-You can also build and then run stack here.
+Environment points to things like npm token, codebuild token, ACM domain cert, etc.
+
+- Look at `main.ts` and notice a few SSM params that need to be set/passed (domain and cert). These should be configured (or override with hardcoded values, etc.)
+- Look at `main.ts` where the build pipeline is created. There are some additional env values obtained via SSM by default. These can be configured or overriden.
+
+## Verify you can build and synth the CFN templates
 
 ```bash
 make build
-cd ./stack
-cdk deploy
+make utest
+make cdk list
+make cdk urls-build-pipeline-master
 ```
 
-Test
+## Setup CI
+
+This needs to be run whenever you make changes to pipeline stack. The pipeline is deployed manually.
+
+```bash
+npm run cdk deploy urls-build-pipeline-master
+```
+
+Push a commit to trigger build deploy to dev. The CI will deploy the API target from this directory (see buildspec.yml).
+
+## Test
 
 ```bash
 curl -X POST  https://u.nod15c.com/?url=https://www.google.com
-cdk destroy
+npm run cdk destroy urls-build-pipeline-master
 ```

@@ -1,0 +1,4 @@
+# markdownlint-cli
+node_modules/
+dist/
+cdk.out/

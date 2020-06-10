@@ -20,21 +20,20 @@ Note: You could also just use SAM command with SAM template (skip makefiles)
 
 ## Quickstart
 
-See [CDK README](./stack/README.md) to set `.env` to use CDK. This way will create DNS entry and setup certificate.
+See [CDK README](./infra/README.md) for CI setup.
 
-This is enabled by default. See Makefile in this directory.
-
-The following will build and deploy.
+The following will build and deploy manually.
 
 ```bash
 make deploy
 curl -X POST  https://u.example.com?url=https://www.google.com
 ```
 
-To just build
+To just build (verify code builds locally)
 
 ```bash
 make build
+make test
 ```
 
 ## TODO
