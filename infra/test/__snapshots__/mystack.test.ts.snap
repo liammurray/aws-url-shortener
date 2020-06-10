@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`API stack matches snapshot 1`] = `
+exports[`API stack API stack matches snapshot 1`] = `
 Object {
   "Outputs": Object {
     "ApiId": Object {
