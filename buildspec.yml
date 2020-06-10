@@ -21,15 +21,17 @@ phases:
       - "echo COMMIT_BRANCH: $COMMIT_BRANCH"
   build:
     commands:
+      # Lambdas
       - make build
       - make lint
       - make test
+      # CDK
+      - cd infra
+      - make build
+      - make lint
+      - make utest
       # CDK synth to cdk.out
-      - |
-        cd infra
-        npm run build
-        npm run test
-        npm run cdk synth urls-api
+      - npm run cdk synth urls-api
 
 artifacts:
   base-directory: "$CODEBUILD_SRC_DIR_src/infra/cdk-out"
