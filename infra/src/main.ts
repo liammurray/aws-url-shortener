@@ -4,8 +4,7 @@ import * as aws from 'aws-sdk'
 import * as cdk from '@aws-cdk/core'
 import ApiStack from './apiStack'
 import BuildPipelineStack from './buildPipelineStack'
-
-import * as ssm from '@aws-cdk/aws-ssm'
+import { getStringParams } from './utils'
 
 const app = new cdk.App()
 
@@ -24,14 +23,29 @@ getCallerAccount().then(async account => {
     region: process.env.AWS_REGION || 'us-west-2',
   }
 
-  const ssmVal = ssm.StringParameter.valueForStringParameter.bind(null, app)
+  // We need to resolve these params during synth (since used in
+  // string substitutions). Otherwise you end up with:
+  //   u.${Token[TOKEN.134]}
+  //
+  const [certId, domain] = await getStringParams(
+    '/cicd/common/certs/us-west-2',
+    '/cicd/common/domain'
+  )
 
-  new BuildPipelineStack(app, 'urls-build-pipeline-master')
+  const devApiStackName = 'urls-api-dev'
 
-  new ApiStack(app, 'urls-api-dev', {
-    certId: ssmVal('/cicd/common/certs/us-west-2'),
-    domain: ssmVal('/cicd/common/domain'),
-    prefix: 'u', // u.nod15c.com
+  new BuildPipelineStack(app, 'urls-build-pipeline-master', {
+    devApiStackName,
+  })
+
+  // Under automation (CI):
+  //  buildspec runs 'npm run cdk synth urls-api-dev'
+  //  deploy stage uses output from that (urls-api-dev.template.json) to deploy
+  //
+  new ApiStack(app, devApiStackName, {
+    certId,
+    domain,
+    prefix: 'u', // Used to form DNS name: u.nod15c.com
     stage: 'dev',
     env,
   })

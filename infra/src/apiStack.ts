@@ -8,6 +8,7 @@ import * as certman from '@aws-cdk/aws-certificatemanager'
 import { EndpointType } from '@aws-cdk/aws-apigateway'
 import { addCorsOptions } from './apiGatewayUtils'
 import * as path from 'path'
+import { resolveSsm } from '@liammurray/cdk-common'
 
 export interface ApiStackProps extends cdk.StackProps {
   // Required for route53 hosted zone lookup
@@ -24,6 +25,23 @@ export default class ApiStack extends cdk.Stack {
 
   constructor(scope: cdk.Construct, id: string, props: ApiStackProps) {
     super(scope, id, props)
+
+    // Expand "ssm:" entries
+    resolveSsm(this, props)
+
+    // Pipeline sets info in CI. Search for 'parameterOverrides'.
+    //
+    //  CommitInfo: commitInfo,
+    //
+    // Without defaults you need to pass them to cdk synth, deploy and related
+    //  --parameters myParm=value
+    //
+
+    const commitInfoParam = new cdk.CfnParameter(this, 'CommitInfo', {
+      type: 'String',
+      default: '',
+      description: 'Commit info from CI',
+    })
 
     const stagePat = /^[a-z0-9]+$/
     if (!props.stage.match(stagePat)) {
@@ -51,6 +69,7 @@ export default class ApiStack extends cdk.Stack {
     const certificate = certman.Certificate.fromCertificateArn(this, 'cert', regionCertArn)
 
     const dnsName = `${props.prefix}.${props.domain}`
+
     const api = new apigateway.RestApi(this, 'UrlsApi', {
       restApiName: 'Url Shortener Service',
       deployOptions: {
@@ -63,6 +82,14 @@ export default class ApiStack extends cdk.Stack {
         endpointType: EndpointType.REGIONAL,
       },
       description: 'Generates and serves shortened URL aliases.',
+    })
+
+    const tags = {
+      CommitInfo: commitInfoParam.valueAsString,
+    }
+
+    Object.entries(tags).forEach(([key, val]) => {
+      cdk.Tag.add(api, key, val)
     })
 
     const ver = new Date().toISOString()

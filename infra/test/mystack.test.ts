@@ -6,6 +6,12 @@ import ApiStack from '../src/apiStack'
 
 // TODO expand and add build pipeline stack
 
+// const devApiStackName = 'urls-api-dev'
+
+// new BuildPipelineStack(app, 'urls-build-pipeline-master', {
+//   devApiStackName,
+// })
+
 describe('API stack', () => {
   let stack: ApiStack
 
@@ -13,8 +19,8 @@ describe('API stack', () => {
     const app = new cdk.App()
 
     stack = new ApiStack(app, 'urls-api-dev', {
-      certId: 'ssm:/cicd/common/certs/us-west-2',
-      domain: 'ssm:/cicd/common/domain',
+      certId: 'cert',
+      domain: 'domain',
       prefix: 'u',
       stage: 'dev',
       env: {
