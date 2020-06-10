@@ -27,6 +27,8 @@ getCallerAccount().then(async account => {
   // string substitutions). Otherwise you end up with:
   //   u.${Token[TOKEN.134]}
   //
+  // Build pipeline grants CodeBuild access to these via 'codeBuildSsmResourcePaths'
+  //
   const [certId, domain] = await getStringParams(
     '/cicd/common/certs/us-west-2',
     '/cicd/common/domain'

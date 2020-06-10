@@ -31,11 +31,12 @@ phases:
       - make lint
       - make utest
       # CDK synth to cdk.out
-      - npm run cdk synth urls-api
+      - npm run cdk synth urls-api-dev
+      #- npm run cdk synth urls-api-live
 
 artifacts:
   base-directory: "$CODEBUILD_SRC_DIR_src/infra/cdk-out"
   files:
-    - urls-api.template.json
+    - urls-api*.template.json
 
 
