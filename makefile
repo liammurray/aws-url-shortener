@@ -13,6 +13,11 @@ GEN_DIR=./generated
 USE_CDK=true
 include $(MAKETOOLS)/sam.mk
 
+# CDK creates weird logical names so we use stack output
+# sam logs -n UrlFunction --stack-name $(STACK_NAME)
+
 log-urls-func:
 	$(eval ID=$(shell $(MAKETOOLS)/getStackOutputVal.sh $(STACK_NAME) UrlFuncId))
 	sam logs -tn $(ID)
+
+

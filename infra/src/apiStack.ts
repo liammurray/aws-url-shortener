@@ -66,11 +66,18 @@ export default class ApiStack extends cdk.Stack {
     const func = this.createLambda(table, 'UrlFunc', 'index.urlHandler', ver)
     const funcIntegration = new apigateway.LambdaIntegration(func)
 
-    // ##> /
+    // Creates URL
+    //
+    // POST /
+    //
     api.root.addMethod('POST', funcIntegration)
     addCorsOptions(api.root)
 
-    // ##> /:rootId
+    //
+    // Redirects to URL
+    //
+    // GET /:rootId
+    //
     const res = api.root.addResource('{shortId}')
     addCorsOptions(res)
     res.addMethod('GET', funcIntegration)
@@ -89,7 +96,7 @@ export default class ApiStack extends cdk.Stack {
     })
   }
 
-  addRoute53(dnsName: string, api: apigateway.RestApi) {
+  private addRoute53(dnsName: string, api: apigateway.RestApi) {
     const apex = `${dnsName.split('.').filter(Boolean).slice(-2).join('.')}.`
     const zone = route53.HostedZone.fromLookup(this, 'zone', {
       domainName: apex,
@@ -108,7 +115,7 @@ export default class ApiStack extends cdk.Stack {
       }),
     })
   }
-  createLambda(table: dynamodb.Table, funcName: string, handler: string, ver: string) {
+  private createLambda(table: dynamodb.Table, funcName: string, handler: string, ver: string) {
     const lambdaDist = path.resolve(__dirname, '../../funcs/shorten/lambda')
     const code = lambda.Code.fromAsset(lambdaDist)
     const func = new lambda.Function(this, funcName, {
@@ -143,7 +150,7 @@ export default class ApiStack extends cdk.Stack {
     return func
   }
 
-  createUrlEntriesTable() {
+  private createUrlEntriesTable() {
     const dev = true
     const tableName = `UrlEntries-${this.props.stage}`
     const removalPolicy = dev ? cdk.RemovalPolicy.DESTROY : cdk.RemovalPolicy.RETAIN

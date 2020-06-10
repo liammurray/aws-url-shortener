@@ -54,7 +54,7 @@ function makeRedirectResponse(url: string): Response {
   return response
 }
 
-function getStr(ob: Object, key: string): string {
+function getStr(ob: Record<string, any>, key: string): string {
   const out = _get(ob, key)
   if (out == null) {
     throw new Error(`Parameter: ${key}`)
@@ -62,11 +62,29 @@ function getStr(ob: Object, key: string): string {
   return out
 }
 
-function getOptStr(ob: Object, key: string): string {
+function getOptStr(ob: Record<string, any>, key: string): string {
   return _get(ob, key)
 }
 
-export async function createShortUrlEntry(event: APIGatewayEvent) {
+export const CREATE_SHORTLINK_RESPONSE_SCHEMA = {
+  $schema: 'http://json-schema.org/draft-06/schema',
+  type: 'object',
+  required: ['shortId'],
+  additionalProperties: false,
+  properties: {
+    shortId: { type: 'string' },
+  },
+}
+
+/**
+ * POST /
+ *
+ * Query params:
+ *  url: url to link to
+ *
+ * Creates short URL entry in database and returns short URL
+ */
+export async function createShortLink(event: APIGatewayEvent): Promise<Response> {
   let url: string
   let custom: string
 
@@ -89,7 +107,12 @@ export async function createShortUrlEntry(event: APIGatewayEvent) {
   }
 }
 
-export async function redirect(event: APIGatewayEvent) {
+/**
+ * GET /:{id}
+ *
+ * Returns HTTP 302 redriect to real URL.
+ */
+export async function redirect(event: APIGatewayEvent): Promise<Response> {
   logger.info(event, 'redirect')
   let hash
   try {
@@ -97,6 +120,7 @@ export async function redirect(event: APIGatewayEvent) {
   } catch (err) {
     return makeResponse({ err: err.toString() }, HttpStatus.BAD_REQUEST)
   }
+  event.headers
   try {
     const db = getUrlsDatabase()
     logger.info({ shortId: hash }, 'Decoding short id')
@@ -116,16 +140,20 @@ export async function redirect(event: APIGatewayEvent) {
   }
 }
 
-type HandlerMap = { [key: string]: (event: APIGatewayEvent) => Promise<any> }
+type HandlerMap = { [key: string]: (event: APIGatewayEvent) => Promise<Response> }
 const handlerMap: HandlerMap = {
   GET: redirect,
-  POST: createShortUrlEntry,
+  POST: createShortLink,
 }
 
 /**
- * Lambda CRUD entry point
+ * Lambda CRUD entry point mapped based on HTTP verb
+ *
+ * POST / => create short URL
+ *
+ * GET  /<id> => redirect to actual URL
  */
-export function urlHandler(event: APIGatewayEvent) {
+export async function urlHandler(event: APIGatewayEvent): Promise<Response> {
   const handler = handlerMap[event.httpMethod]
   if (handler) {
     return handler(event)

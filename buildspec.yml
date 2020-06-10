@@ -1,0 +1,39 @@
+
+version: 0.2
+
+env:
+  variables:
+    PACKAGE_OUTPUT_BUCKET: nod15c.lambda
+    # Expanded later
+    MAKETOOLS: "${CODEBUILD_SRC_DIR_tools}"
+  parameter-store:
+    NOD15C_NPM_TOKEN: "${NPM_TOKEN_PARAM_KEY}"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 12
+
+  pre_build:
+    commands:
+      # These come from passing GitHubSourceVariables (CODEBUILD_SOURCE_REPO_URL, etc. are empty when triggered from CPL)
+      - "echo COMMIT_ID: $COMMIT_ID"
+      - "echo COMMIT_BRANCH: $COMMIT_BRANCH"
+  build:
+    commands:
+      - make build
+      - make lint
+      - make test
+      # CDK synth to cdk.out
+      - |
+        cd infra
+        npm run build
+        npm run test
+        npm run cdk synth urls-api
+
+artifacts:
+  base-directory: cdk-out
+  files:
+    - urls-api.template.json
+
+

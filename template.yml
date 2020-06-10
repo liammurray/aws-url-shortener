@@ -1,11 +1,11 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: >
+Description: >-
   URL shortener
 
 Parameters:
 
-  ApiStageName:
+  ApiStage:
     Type: "String"
     AllowedPattern: "^[a-z0-9]+$"
     Default: "dev"
@@ -25,7 +25,7 @@ Globals:
     Environment:
       Variables:
         # TODO: TABLE_NAME_URL_ENTRIES: !Ref UrlEntries
-        TABLE_NAME_URL_ENTRIES: !Sub UrlEntries-${ApiStageName}
+        TABLE_NAME_URL_ENTRIES: !Sub UrlEntries-${ApiStage}
         SERVICE_NAME: UrlShortener
         # Used when AWS_SAM_LOCAL=true
         LOCAL_DDB_ENDPOINT: "http://host.docker.internal:8000"
@@ -40,7 +40,7 @@ Resources:
     # TODO: simplify and use AWS::Serverless::SimpleTable
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub UrlEntries-${ApiStageName}
+      TableName: !Sub UrlEntries-${ApiStage}
       KeySchema:
         - AttributeName: id
           KeyType: HASH
@@ -61,7 +61,8 @@ Resources:
   UrlShortenerApi:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: !Ref ApiStageName
+      Name: !Sub ${StackName}-api
+      StageName: !Ref ApiStage
 
 
   ###############################
@@ -136,12 +137,12 @@ Outputs:
 
   ApiUrl:
     Description: API endpoint URL
-    Value: !Sub 'https://${UrlShortenerApi}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}/'
+    Value: !Sub 'https://${UrlShortenerApi}.execute-api.${AWS::Region}.amazonaws.com/${ApiStage}/'
     Export:
       Name: !Sub "${AWS::StackName}:ApiUrl"
 
   ApiStage:
     Description: API Gateway Stage
-    Value: !Ref ApiStageName
+    Value: !Ref ApiStage
     Export:
       Name: !Sub "${AWS::StackName}:ApiStage"
