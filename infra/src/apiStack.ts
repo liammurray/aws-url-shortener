@@ -11,8 +11,8 @@ import * as path from 'path'
 
 export interface ApiStackProps extends cdk.StackProps {
   readonly certId: string
-  readonly dnsName: string
-  readonly env: cdk.Environment
+  readonly domain: string
+  readonly prefix: string
   readonly stage: string
   readonly autoAlias?: boolean
 }
@@ -43,9 +43,12 @@ export default class ApiStack extends cdk.Stack {
     //   https://docs.aws.amazon.com/cdk/api/latest/python/aws_cdk.aws_apigateway.README.html
     //
 
-    const regionCertArn = `arn:aws:acm:${props.env.region}:${props.env.account}:certificate/${props.certId}`
+    const { account, region } = cdk.Stack.of(this)
+
+    const regionCertArn = `arn:aws:acm:${region}:${account}:certificate/${props.certId}`
     const certificate = certman.Certificate.fromCertificateArn(this, 'cert', regionCertArn)
 
+    const dnsName = `${props.prefix}.${props.domain}`
     const api = new apigateway.RestApi(this, 'UrlsApi', {
       restApiName: 'Url Shortener Service',
       deployOptions: {
@@ -54,7 +57,7 @@ export default class ApiStack extends cdk.Stack {
       },
       domainName: {
         certificate,
-        domainName: props.dnsName,
+        domainName: dnsName,
         endpointType: EndpointType.REGIONAL,
       },
       description: 'Generates and serves shortened URL aliases.',
@@ -81,7 +84,7 @@ export default class ApiStack extends cdk.Stack {
     addCorsOptions(res)
     res.addMethod('GET', funcIntegration)
 
-    const rec = this.addRoute53(props.dnsName, api)
+    const rec = this.addRoute53(dnsName, api)
 
     // Outputs (nice)
     new cdk.CfnOutput(this, 'ApiId', {

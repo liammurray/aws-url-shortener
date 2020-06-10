@@ -8,6 +8,7 @@ export default class BuildPipelineStack extends cdk.Stack {
     const pipelineOpts = makeBaseProps(this, 'UrlShortener', 'master')
     new BuildPipeline(this, 'BuildPipeline', {
       ...pipelineOpts,
+      // Remove once in ssm under /cicd/UrlShortner/github/repo
       repo: 'aws-url-shortener',
     })
   }
