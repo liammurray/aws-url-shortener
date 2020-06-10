@@ -9,18 +9,14 @@ import * as env from 'env-var'
 import * as ssm from '@aws-cdk/aws-ssm'
 
 export function envStr(key: string): string {
-  return env
-    .get(key)
-    .required()
-    .asString()
+  return env.get(key).required().asString()
 }
 
 dotenv.config()
 
 const app = new cdk.App()
 
-const ssmVal = ssm.StringParameter.valueForStringParameter.bind(null, app)
-
+//const ssmVal = ssm.StringParameter.valueForStringParameter.bind(null, app)
 
 new BuildPipelineStack(app, 'urls-build-pipeline-master')
 

@@ -30,7 +30,6 @@ export default class ApiStack extends cdk.Stack {
 
     this.props = props
 
-
     const table = this.createUrlEntriesTable()
 
     // TOTO
@@ -134,11 +133,11 @@ export default class ApiStack extends cdk.Stack {
     })
 
     if (this.props.autoAlias) {
-      const version = func.addVersion(ver);
+      const version = func.addVersion(ver)
       new lambda.Alias(this, `${funcName}Alias`, {
         aliasName: this.props.stage,
         version,
-      });
+      })
     }
 
     // sam logs -tn <funcName>
