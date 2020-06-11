@@ -1,4 +1,4 @@
-# Url Shortner
+# Url Shortener
 
 Simple API GW url shortener service example using:
 

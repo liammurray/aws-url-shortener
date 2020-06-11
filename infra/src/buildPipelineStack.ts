@@ -9,7 +9,7 @@ export default class BuildPipelineStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: BuildPipelineStackProps) {
     super(scope, id, props)
 
-    const serviceName = 'UrlShortner'
+    const serviceName = 'UrlShortener'
 
     const baseOpts = makeBaseProps(this, serviceName, 'master')
     const pipelineOpts: BuildPipelineProps = {
@@ -37,7 +37,7 @@ export default class BuildPipelineStack extends cdk.Stack {
 //   constructor(scope: cdk.Construct, id: string, props: BuildPipelineStackProps) {
 //     super(scope, id, props)
 
-//     const serviceName = 'UrlShortner'
+//     const serviceName = 'UrlShortener'
 
 //     const baseOpts = makeBaseProps(this, serviceName, 'master')
 //     const pipelineOpts: BuildPipelineProps = {
