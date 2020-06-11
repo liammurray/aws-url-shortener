@@ -4,10 +4,9 @@ version: 0.2
 env:
   variables:
     PACKAGE_OUTPUT_BUCKET: nod15c.lambda
+    SAM_DEPLOY_TEMPLATE: deploy.yml
     # Expanded later
     MAKETOOLS: "${CODEBUILD_SRC_DIR_tools}"
-    # For Makefile (just in case since we don't use make deploy below, etc.)
-    USE_CDK: true
   parameter-store:
     NOD15C_NPM_TOKEN: "${NPM_TOKEN_PARAM_KEY}"
 
@@ -27,18 +26,15 @@ phases:
       - make build
       - make lint
       - make test
-      # CDK
-      - cd infra
-      - make build
-      - make lint
-      - make utest
-      # CDK synth to cdk.out
-      - npm run cdk synth urls-api-dev
-      #- npm run cdk synth urls-api-live
+      # SAM
+      - |
+        sam package \
+          --template-file ./template.yml \
+          --output-template-file $SAM_DEPLOY_TEMPLATE \
+          --s3-bucket nod15c.lambda
 
 artifacts:
-  base-directory: infra/cdk.out
   files:
-    - urls-api*.template.json
+    - $SAM_DEPLOY_TEMPLATE
 
 

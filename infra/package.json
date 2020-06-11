@@ -43,7 +43,7 @@
     "@aws-cdk/aws-dynamodb": "^1.45.0",
     "@aws-cdk/aws-lambda": "^1.45.0",
     "@aws-cdk/core": "1.45.0",
-    "@liammurray/cdk-common": "^0.1.8",
+    "@liammurray/cdk-common": "^0.1.9",
     "dot-env": "0.0.1",
     "dotenv": "^8.2.0",
     "env-var": "^6.1.1",

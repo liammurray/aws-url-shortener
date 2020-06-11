@@ -2,8 +2,9 @@
 
 Simple API GW url shortener service example using:
 
-- AWS SAM/CDK
-- Typesript
+- AWS SAM/CDK for deploying build pipeline and API
+  - CDK currently doesn't work for CI (CDK doesn't support yet)
+- Typescript
 - DynamoDb using [dynamodb-datamapper-js](https://github.com/awslabs/dynamodb-data-mapper-js)
 
 ## Dependencies
@@ -22,7 +23,7 @@ Note: You could also just use SAM command with SAM template (skip makefiles)
 
 See [CDK README](./infra/README.md) for CI setup.
 
-The following will build and deploy manually.
+The following will build and deploy manually. It uses SAM by default. See Makefile.
 
 ```bash
 make deploy
