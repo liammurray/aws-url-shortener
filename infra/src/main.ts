@@ -41,8 +41,8 @@ getCallerAccount().then(async account => {
     devApiStackName,
   })
 
-  new CognitoPoolStack(app, 'urls-cognito, {
-    serviceName: 'UrlShortner'
+  new CognitoPoolStack(app, 'urls-cognito-dev', {
+    serviceName: 'UrlShortner',
   })
   // Under automation (CI):
   //  buildspec runs 'npm run cdk synth urls-api-dev'
@@ -55,6 +55,4 @@ getCallerAccount().then(async account => {
     stage: 'dev',
     env,
   })
-
-
 })

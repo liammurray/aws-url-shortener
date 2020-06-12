@@ -3,6 +3,7 @@
 This directory deploys:
 
     - Build pipeline for CI/CD that deploys API
+    - Cognito user pool
     - API itself
 
 ## Build the lambda function code
@@ -27,8 +28,15 @@ Environment points to things like npm token, codebuild token, ACM domain cert, e
 ```bash
 make build
 make utest
-make cdk list
-make cdk urls-build-pipeline-master
+npm run cdk list
+```
+
+## Setup Cognito
+
+This is deployed manually.
+
+```bash
+npm run cdk deploy urls-cognito-dev
 ```
 
 ## Setup CI

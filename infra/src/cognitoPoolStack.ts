@@ -70,15 +70,16 @@ export default class CognitoPoolStack extends cdk.Stack {
         emailStyle: cognito.VerificationEmailStyle.CODE,
       },
     })
-    const cfnPool = userPool.node.defaultChild as cognito.CfnUserPool
-    this.output('PoolArn', userPool.userPoolArn)
-    // this.export(`${userPoolName}Arn`, userPool.userPoolArn)
+    // const cfnPool = userPool.node.defaultChild as cognito.CfnUserPool
+    this.output('UserPoolId', userPool.userPoolId)
+    this.export(`${userPoolName}Id`, userPool.userPoolId)
 
     // One app client for UrlShortner app
     const client = this.createAppClient(userPool)
+
     // For exchanging cognito token for temporary AWS credentials
-    this.createIdentityPool(userPool, client)
-    this.createAuthRoles(cfnPool)
+    const identityPool = this.createIdentityPool(userPool, client)
+    this.createAuthRoles(identityPool)
   }
 
   private createAppClient(pool: cognito.UserPool): cognito.IUserPoolClient {
@@ -98,9 +99,10 @@ export default class CognitoPoolStack extends cdk.Stack {
     userPool: cognito.UserPool,
     client: cognito.IUserPoolClient
   ): cognito.CfnIdentityPool {
-    return new cognito.CfnIdentityPool(this, 'IdentityPool', {
+    const identityPoolName = `${this.props.serviceName}IdentityPool`
+    const identityPool = new cognito.CfnIdentityPool(this, 'IdentityPool', {
       allowUnauthenticatedIdentities: false,
-      identityPoolName: `${this.props.serviceName}IdentityPool`,
+      identityPoolName,
       cognitoIdentityProviders: [
         {
           clientId: client.userPoolClientId,
@@ -108,32 +110,35 @@ export default class CognitoPoolStack extends cdk.Stack {
         },
       ],
     })
+    this.output('IdentityPoolId', identityPool.ref)
+    this.export(`${identityPoolName}Id`, userPool.userPoolArn)
+    return identityPool
   }
 
   private createAuthRolePrincipal(
-    pool: cognito.CfnUserPool,
+    identityPool: cognito.CfnIdentityPool,
     stringLike: 'authenticated' | 'unauthenticated'
   ) {
     return new iam.FederatedPrincipal(
       'cognito-identity.amazonaws.com',
       {
-        StringEquals: { 'cognito-identity.amazonaws.com:aud': pool.ref },
+        StringEquals: { 'cognito-identity.amazonaws.com:aud': identityPool.ref },
         'ForAnyValue:StringLike': { 'cognito-identity.amazonaws.com:amr': stringLike },
       },
       'sts:AssumeRoleWithWebIdentity'
     )
   }
 
-  private createUnAuthRole(pool: cognito.CfnUserPool) {
+  private createUnAuthRole(identityPool: cognito.CfnIdentityPool) {
     const role = new iam.Role(this, 'UnAuthenticatedRole', {
-      assumedBy: this.createAuthRolePrincipal(pool, 'unauthenticated'),
+      assumedBy: this.createAuthRolePrincipal(identityPool, 'unauthenticated'),
     })
     return role
   }
 
-  private createAuthRole(pool: cognito.CfnUserPool) {
+  private createAuthRole(identityPool: cognito.CfnIdentityPool) {
     const role = new iam.Role(this, 'AuthenticatedRole', {
-      assumedBy: this.createAuthRolePrincipal(pool, 'authenticated'),
+      assumedBy: this.createAuthRolePrincipal(identityPool, 'authenticated'),
     })
 
     // TODO execute API or other AWS allowed actions (listBuckets, etc)
@@ -148,11 +153,11 @@ export default class CognitoPoolStack extends cdk.Stack {
     return role
   }
 
-  private createAuthRoles(pool: cognito.CfnUserPool) {
-    const unauthRole = this.createUnAuthRole(pool)
-    const authRole = this.createAuthRole(pool)
+  private createAuthRoles(identityPool: cognito.CfnIdentityPool) {
+    const unauthRole = this.createUnAuthRole(identityPool)
+    const authRole = this.createAuthRole(identityPool)
     new cognito.CfnIdentityPoolRoleAttachment(this, 'DefaultValid', {
-      identityPoolId: pool.ref,
+      identityPoolId: identityPool.ref,
       roles: {
         unauthenticated: unauthRole.roleArn,
         authenticated: authRole.roleArn,

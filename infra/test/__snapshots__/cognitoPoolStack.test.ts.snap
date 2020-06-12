@@ -8,12 +8,33 @@ Object {
         "Ref": "UserPoolApiClient5E25D46A",
       },
     },
-    "PoolArn": Object {
+    "IdentityPoolId": Object {
+      "Value": Object {
+        "Ref": "IdentityPool",
+      },
+    },
+    "UrlShortnerIdentityPoolId": Object {
+      "Export": Object {
+        "Name": "UrlShortnerIdentityPoolId",
+      },
       "Value": Object {
         "Fn::GetAtt": Array [
           "UserPool6BA7E5F2",
           "Arn",
         ],
+      },
+    },
+    "UrlShortnerUserPoolId": Object {
+      "Export": Object {
+        "Name": "UrlShortnerUserPoolId",
+      },
+      "Value": Object {
+        "Ref": "UserPool6BA7E5F2",
+      },
+    },
+    "UserPoolId": Object {
+      "Value": Object {
+        "Ref": "UserPool6BA7E5F2",
       },
     },
   },
@@ -44,7 +65,7 @@ Object {
                 },
                 "StringEquals": Object {
                   "cognito-identity.amazonaws.com:aud": Object {
-                    "Ref": "UserPool6BA7E5F2",
+                    "Ref": "IdentityPool",
                   },
                 },
               },
@@ -87,7 +108,7 @@ Object {
     "DefaultValid": Object {
       "Properties": Object {
         "IdentityPoolId": Object {
-          "Ref": "UserPool6BA7E5F2",
+          "Ref": "IdentityPool",
         },
         "Roles": Object {
           "authenticated": Object {
@@ -334,7 +355,7 @@ Object {
                 },
                 "StringEquals": Object {
                   "cognito-identity.amazonaws.com:aud": Object {
-                    "Ref": "UserPool6BA7E5F2",
+                    "Ref": "IdentityPool",
                   },
                 },
               },
