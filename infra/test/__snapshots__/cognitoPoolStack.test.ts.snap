@@ -360,8 +360,8 @@ Object {
         "EmailConfiguration": Object {
           "ReplyToEmailAddress": "noreply@nod15c.com",
         },
-        "EmailVerificationMessage": "The verification code to your new account is {####}",
-        "EmailVerificationSubject": "Verify your new account",
+        "EmailVerificationMessage": "Your verification code: {####}.",
+        "EmailVerificationSubject": "Verification Code for UrlShortner",
         "EnabledMfas": Array [
           "SMS_MFA",
           "SOFTWARE_TOKEN_MFA",
@@ -390,6 +390,13 @@ Object {
             "RequireUppercase": true,
           },
         },
+        "Schema": Array [
+          Object {
+            "Mutable": false,
+            "Name": "email",
+            "Required": true,
+          },
+        ],
         "SmsConfiguration": Object {
           "ExternalId": "teststackUserPoolC9A02659",
           "SnsCallerArn": Object {
@@ -403,8 +410,8 @@ Object {
         "UserPoolName": "UrlShortnerUserPool",
         "VerificationMessageTemplate": Object {
           "DefaultEmailOption": "CONFIRM_WITH_CODE",
-          "EmailMessage": "The verification code to your new account is {####}",
-          "EmailSubject": "Verify your new account",
+          "EmailMessage": "Your verification code: {####}.",
+          "EmailSubject": "Verification Code for UrlShortner",
           "SmsMessage": "The verification code to your new account is {####}",
         },
       },

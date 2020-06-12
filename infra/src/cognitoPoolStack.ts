@@ -57,10 +57,20 @@ export default class CognitoPoolStack extends cdk.Stack {
         requireSymbols: true,
         requireUppercase: true,
       },
+      standardAttributes: {
+        email: {
+          mutable: false,
+          required: true,
+        },
+      },
+      //userInvitation: {},
+      userVerification: {
+        emailBody: 'Your verification code: {####}.',
+        emailSubject: 'Verification Code for UrlShortner',
+        emailStyle: cognito.VerificationEmailStyle.CODE,
+      },
     })
     const cfnPool = userPool.node.defaultChild as cognito.CfnUserPool
-    //EmailVerificationMessage: "Here is your verification code: {####}."
-    //EmailVerificationSubject: "Verification Code for UrlShortner"
     this.output('PoolArn', userPool.userPoolArn)
     // this.export(`${userPoolName}Arn`, userPool.userPoolArn)
 
