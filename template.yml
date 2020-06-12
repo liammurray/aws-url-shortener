@@ -8,11 +8,12 @@ Parameters:
   ApiStage:
     Type: "String"
     AllowedPattern: "^[a-z0-9]+$"
-    Default: "dev"
+    Default: dev
 
-  LogRetentionDays:
-    Type: "Number"
-    Default: 7
+  CommitInfo:
+    Type: String
+    Description: Pipeline info (git hash, etc.) from CI/CD
+    Default: nada
 
 
 Globals:
@@ -61,8 +62,17 @@ Resources:
   UrlShortenerApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub ${StackName}-api
+      Name: !Sub ${AWS::StackName}
       StageName: !Ref ApiStage
+      Tags:
+        CommitInfo: !Ref CommitInfo
+      EndpointConfiguration: REGIONAL
+      TracingEnabled: true
+    Auth:
+      Authorizers:
+        UrlsCognitoAuthorizer:
+          # Exported from CDK
+          UserPoolArn: !ImportValue UrlShortnerUserPoolId
 
 
   ###############################
@@ -90,16 +100,6 @@ Resources:
 
 
   ##################################
-  # Log groups so we can set retention policies
-  #
-  UrlFunctionLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub "/aws/lambda/${UrlFunction}"
-      RetentionInDays: !Ref LogRetentionDays
-
-
-  ##################################
   # Functions
   #
 
@@ -119,7 +119,10 @@ Resources:
             Path: /url
             Method: POST
             RestApiId: !Ref UrlShortenerApi
+          Auth:
+            Authorizer: UrlsCognitoAuthorizer
         GetUrl:
+          # No auth
           Type: Api
           Properties:
             Path: /{shortId}
