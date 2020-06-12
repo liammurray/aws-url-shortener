@@ -4,6 +4,7 @@ import * as aws from 'aws-sdk'
 import * as cdk from '@aws-cdk/core'
 import ApiStack from './apiStack'
 import BuildPipelineStack from './buildPipelineStack'
+import CognitoPoolStack from './cognitoPoolStack'
 import { getStringParams } from './utils'
 
 const app = new cdk.App()
@@ -40,6 +41,9 @@ getCallerAccount().then(async account => {
     devApiStackName,
   })
 
+  new CognitoPoolStack(app, 'urls-cognito, {
+    serviceName: 'UrlShortner'
+  })
   // Under automation (CI):
   //  buildspec runs 'npm run cdk synth urls-api-dev'
   //  deploy stage uses output from that (urls-api-dev.template.json) to deploy
@@ -51,4 +55,6 @@ getCallerAccount().then(async account => {
     stage: 'dev',
     env,
   })
+
+
 })
