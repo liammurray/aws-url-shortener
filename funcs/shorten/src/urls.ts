@@ -8,9 +8,6 @@ import _get from 'lodash.get'
 
 const urlEntriesTableName = envStr('TABLE_NAME_URL_ENTRIES')
 
-/**
- * Using '!' asserts we know property will not be null (strictPropertyInitialization)
- */
 @table(urlEntriesTableName)
 export class UrlEntry {
   @hashKey()

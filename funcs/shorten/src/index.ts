@@ -101,7 +101,7 @@ export async function createShortLink(event: APIGatewayEvent): Promise<Response>
     const id = await db.create(url)
     const shortId = encodeBase62(id)
     logger.info({ shortId, id, url }, 'Created URL entry')
-    return makeResponse({ shortId: shortId }, HttpStatus.OK)
+    return makeResponse({ shortId }, HttpStatus.OK)
   } catch (err) {
     return makeResponse(undefined, HttpStatus.INTERNAL_SERVER_ERROR, err)
   }

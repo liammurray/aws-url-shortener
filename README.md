@@ -21,9 +21,9 @@ Note: You could also just use SAM command with SAM template (skip makefiles)
 
 ## Quickstart
 
-See [CDK README](./infra/README.md) for CI setup.
+See [CDK README](./infra/README.md) for CI setup and deploying with CDK (recommended).
 
-The following will build and deploy manually. It uses SAM by default. See Makefile.
+The following will build and deploy manually. It uses SAM by default but you can use CDK as well. See Makefile.
 
 ```bash
 make deploy
@@ -35,6 +35,12 @@ To just build (verify code builds locally)
 ```bash
 make build
 make test
+```
+
+To destroy:
+
+```bash
+make destroy
 ```
 
 ## TODO

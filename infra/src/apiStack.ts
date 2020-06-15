@@ -5,13 +5,18 @@ import * as lambda from '@aws-cdk/aws-lambda'
 import * as logs from '@aws-cdk/aws-logs'
 import * as route53 from '@aws-cdk/aws-route53'
 import * as certman from '@aws-cdk/aws-certificatemanager'
-import { EndpointType } from '@aws-cdk/aws-apigateway'
+import {
+  EndpointType,
+  CfnAuthorizer,
+  LambdaIntegration,
+  AuthorizationType,
+} from '@aws-cdk/aws-apigateway'
 import { addCorsOptions } from './apiGatewayUtils'
 import * as path from 'path'
 import { resolveSsm } from '@liammurray/cdk-common'
 
 export interface ApiStackProps extends cdk.StackProps {
-  // Required for route53 hosted zone lookup
+  // Required for route53 hosted zone lookup (can't use environment generic stack)
   readonly env: cdk.Environment
   readonly certId: string
   readonly domain: string
@@ -92,6 +97,10 @@ export default class ApiStack extends cdk.Stack {
       cdk.Tag.add(api, key, val)
     })
 
+    // Depends on cognito pool stack
+    const userPoolId = cdk.Fn.importValue('UrlShortnerUserPoolId')
+    const cognitoAuth = this.createCognitoAuthorizer(api, userPoolId)
+
     const ver = new Date().toISOString()
 
     const func = this.createLambda(table, 'UrlFunc', 'index.urlHandler', ver)
@@ -101,13 +110,22 @@ export default class ApiStack extends cdk.Stack {
     //
     // POST /
     //
-    api.root.addMethod('POST', funcIntegration)
+    // Requires cognito token to access (protected)
+    //
+    api.root.addMethod('POST', funcIntegration, {
+      authorizationType: AuthorizationType.COGNITO,
+      authorizer: {
+        authorizerId: cognitoAuth.ref,
+      },
+    })
     addCorsOptions(api.root)
 
     //
     // Redirects to URL
     //
     // GET /:rootId
+    //
+    // Open (no auth)
     //
     const res = api.root.addResource('{shortId}')
     addCorsOptions(res)
@@ -124,6 +142,18 @@ export default class ApiStack extends cdk.Stack {
     })
     new cdk.CfnOutput(this, 'DomainName', {
       value: rec.domainName,
+    })
+  }
+
+  private createCognitoAuthorizer(api: apigateway.RestApi, userPoolId: string): CfnAuthorizer {
+    const { account, region } = cdk.Stack.of(this)
+    const userPoolArn = `arn:aws:cognito-idp:${region}:${account}:userpool/${userPoolId}`
+    return new CfnAuthorizer(this, 'cfnAuth', {
+      restApiId: api.restApiId,
+      name: 'UrlsApiAuthorizer',
+      type: 'COGNITO_USER_POOLS',
+      identitySource: 'method.request.header.Authorization',
+      providerArns: [userPoolArn],
     })
   }
 
