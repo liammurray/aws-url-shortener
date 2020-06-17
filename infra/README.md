@@ -73,7 +73,7 @@ Push a commit to trigger build deploy to dev. The CI will deploy the API target 
 ## Test
 
 ```bash
-curl -X POST  https://u.nod15c.com/?url=https://www.google.com
+curl -X POST  https://u.nod15c.com?url=https://www.google.com
 npm run cdk destroy urls-build-pipeline-master
 ```
 

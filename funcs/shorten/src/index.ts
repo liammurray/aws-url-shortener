@@ -1,7 +1,6 @@
 import { logger } from './util'
 
-import { encodeBase62, decodeBase62 } from './encode'
-import { getUrlsDatabase } from './urls'
+import { getUrlsDatabase, CreateResult } from './urlsDatabase'
 import { APIGatewayEvent } from 'aws-lambda'
 import _get from 'lodash.get'
 import HttpStatus from 'http-status-codes'
@@ -66,13 +65,20 @@ function getOptStr(ob: Record<string, any>, key: string): string {
   return _get(ob, key)
 }
 
+export function getClientId(event: APIGatewayEvent): string {
+  // Locally we don't get this so use 'anon' (sub is same as client_id)
+  return _get(event, 'requestContext.authorizer.claims.sub') || 'anon'
+}
+
 export const CREATE_SHORTLINK_RESPONSE_SCHEMA = {
   $schema: 'http://json-schema.org/draft-06/schema',
   type: 'object',
-  required: ['shortId'],
+  required: ['shortId', 'code'],
   additionalProperties: false,
   properties: {
-    shortId: { type: 'string' },
+    id: { type: 'string' },
+    msg: { type: 'string' },
+    code: { type: 'string', enum: ['created', 'aliasExists', 'aliasInvalid'] },
   },
 }
 
@@ -81,27 +87,31 @@ export const CREATE_SHORTLINK_RESPONSE_SCHEMA = {
  *
  * Query params:
  *  url: url to link to
+ *  alias: alias to map to
  *
  * Creates short URL entry in database and returns short URL
  */
 export async function createShortLink(event: APIGatewayEvent): Promise<Response> {
   let url: string
-  let custom: string
+  let alias: string
 
   try {
-    // TODO validate url
     url = getStr(event, 'queryStringParameters.url')
-    custom = getOptStr(event, 'queryStringParameters.custom')
+    alias = getOptStr(event, 'queryStringParameters.alias')
   } catch (err) {
     return makeResponse({ err: err.toString() }, HttpStatus.BAD_REQUEST)
   }
 
   try {
     const db = getUrlsDatabase()
-    const id = await db.create(url)
-    const shortId = encodeBase62(id)
-    logger.info({ shortId, id, url }, 'Created URL entry')
-    return makeResponse({ shortId }, HttpStatus.OK)
+    let res: CreateResult
+    if (alias) {
+      res = await db.createAlias(alias, url)
+    } else {
+      res = await db.createAuto(url)
+    }
+    logger.info(res, 'Created entry')
+    return makeResponse(res, HttpStatus.OK)
   } catch (err) {
     return makeResponse(undefined, HttpStatus.INTERNAL_SERVER_ERROR, err)
   }
@@ -114,27 +124,19 @@ export async function createShortLink(event: APIGatewayEvent): Promise<Response>
  */
 export async function redirect(event: APIGatewayEvent): Promise<Response> {
   logger.info(event, 'redirect')
-  let hash
+  let id
   try {
-    hash = getStr(event, 'pathParameters.shortId')
+    id = getStr(event, 'pathParameters.shortId')
   } catch (err) {
     return makeResponse({ err: err.toString() }, HttpStatus.BAD_REQUEST)
   }
-  event.headers
   try {
     const db = getUrlsDatabase()
-    logger.info({ shortId: hash }, 'Decoding short id')
-    let id
-    try {
-      id = decodeBase62(hash)
-    } catch (err) {
-      return makeResponse({}, HttpStatus.NOT_FOUND, err)
+    const ent = await db.getById(id)
+    if (!ent || !ent.url) {
+      return makeResponse({ id }, HttpStatus.NOT_FOUND)
     }
-    const entry = await db.get(id)
-    if (entry && entry.url) {
-      return makeRedirectResponse(entry.url)
-    }
-    return makeResponse(undefined, HttpStatus.NOT_FOUND)
+    return makeRedirectResponse(ent.url)
   } catch (err) {
     return makeResponse({}, HttpStatus.INTERNAL_SERVER_ERROR, err)
   }

@@ -10,11 +10,6 @@ export const logger = pino({
   name: envStr('SERVICE_NAME'),
 })
 
-export function flatMap<A, T>(arr: A[], mapper: (param: A) => T[]): T[] {
-  const out: T[] = []
-  return arr.reduce((prev, x) => prev.concat(mapper(x)), out)
-}
-
 export function arnSlice(
   arn: string,
   start?: number | undefined,

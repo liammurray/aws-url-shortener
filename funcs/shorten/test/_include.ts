@@ -20,3 +20,5 @@
 // chai.config.includeStack = true
 
 process.env.AWS_REGION = 'us-west-2'
+process.env.SERVICE_NAME = 'UrlShortnerTest'
+process.env.TABLE_NAME_URLS = 'UrlsTest'
