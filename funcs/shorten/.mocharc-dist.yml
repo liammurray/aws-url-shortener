@@ -1,0 +1,7 @@
+require:
+  - source-map-support/register
+  - dist/test/_include.js
+recursive: true
+spec: dist/test/src/**/*.test.js
+
+

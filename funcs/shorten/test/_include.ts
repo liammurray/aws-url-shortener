@@ -1,24 +1,14 @@
-//import chai from 'chai'
-//import chaiAsPromised from 'chai-as-promised'
-// import chaiJsonSchema from 'chai-json-schema-ajv'
-// import chaiMatch from 'chai-match'
-// import sinonChai from 'sinon-chai'
+import chai from 'chai'
+import chaiJsonSchema from 'chai-json-schema-ajv'
 
-// process.env.AWS_REGION = 'us-west-2'
-
-// chai
-//   .use(sinonChai)
-//   .use(chaiAsPromised)
-//   .use(chaiMatch)
-//   .use(
-//     chaiJsonSchema.withOptions({
-//       verbose: true,
-//       allErrors: true,
-//     })
-//   )
-
-// chai.config.includeStack = true
+chai.use(
+  chaiJsonSchema.withOptions({
+    verbose: true,
+    allErrors: true,
+  })
+)
 
 process.env.AWS_REGION = 'us-west-2'
 process.env.SERVICE_NAME = 'UrlShortnerTest'
 process.env.TABLE_NAME_URLS = 'UrlsTest'
+process.env.INDEX_NAME_CLIENT = 'ClientIdIndex'

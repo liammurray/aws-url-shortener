@@ -1,8 +1,11 @@
 ---
-plugins: ['mocha']
+plugins: ['mocha', 'chai-friendly']
 extends: ['plugin:mocha/recommended']
 env:
   mocha: true
 rules:
   mocha/no-setup-in-describe:
     - off
+  mocha/no-skipped-tests:
+    - off
+

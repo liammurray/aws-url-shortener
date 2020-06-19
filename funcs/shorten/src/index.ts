@@ -1,6 +1,6 @@
 import { logger } from './util'
 
-import { getUrlsDatabase, CreateResult } from './urlsDatabase'
+import { getUrlsDatabase, CreateResult, ListResult } from './urlsDatabase'
 import { APIGatewayEvent } from 'aws-lambda'
 import _get from 'lodash.get'
 import HttpStatus from 'http-status-codes'
@@ -55,31 +55,49 @@ function makeRedirectResponse(url: string): Response {
 
 function getStr(ob: Record<string, any>, key: string): string {
   const out = _get(ob, key)
-  if (out == null) {
+  if (out == null || typeof out != 'string') {
     throw new Error(`Parameter: ${key}`)
   }
   return out
 }
 
-function getOptStr(ob: Record<string, any>, key: string): string {
-  return _get(ob, key)
+function getOptStr(ob: Record<string, any>, key: string): string | undefined {
+  const out = _get(ob, key)
+  if (out != null && typeof out != 'string') {
+    throw new Error(`Parameter: ${key}`)
+  }
+  return out
+}
+
+function getOptNumber(ob: Record<string, any>, key: string): number | undefined {
+  const val = _get(ob, key)
+  if (val != null) {
+    return parseInt(val, 10)
+  }
 }
 
 export function getClientId(event: APIGatewayEvent): string {
-  // Locally we don't get this so use 'anon' (sub is same as client_id)
-  return _get(event, 'requestContext.authorizer.claims.sub') || 'anon'
+  // sub (subject) contains client_id
+  return _get(event, 'requestContext.authorizer.claims.sub') || ''
 }
 
-export const CREATE_SHORTLINK_RESPONSE_SCHEMA = {
-  $schema: 'http://json-schema.org/draft-06/schema',
-  type: 'object',
-  required: ['shortId', 'code'],
-  additionalProperties: false,
-  properties: {
-    id: { type: 'string' },
-    msg: { type: 'string' },
-    code: { type: 'string', enum: ['created', 'aliasExists', 'aliasInvalid'] },
-  },
+/**
+ * GET /
+ *
+ * Query params:
+ *   limit
+ */
+export async function getLinks(event: APIGatewayEvent): Promise<Response> {
+  const clientId = getClientId(event)
+  const limit = Math.min(getOptNumber(event, 'queryStringParameters.limit') || 10, 25)
+
+  try {
+    const db = getUrlsDatabase()
+    const res: ListResult = await db.getEntries(clientId, limit)
+    return makeResponse(res, HttpStatus.OK)
+  } catch (err) {
+    return makeResponse(undefined, HttpStatus.INTERNAL_SERVER_ERROR, err)
+  }
 }
 
 /**
@@ -93,10 +111,11 @@ export const CREATE_SHORTLINK_RESPONSE_SCHEMA = {
  */
 export async function createShortLink(event: APIGatewayEvent): Promise<Response> {
   let url: string
-  let alias: string
-
+  let alias: string | undefined
+  const clientId = getClientId(event)
   try {
     url = getStr(event, 'queryStringParameters.url')
+    // Alternative: PUT /<alias>
     alias = getOptStr(event, 'queryStringParameters.alias')
   } catch (err) {
     return makeResponse({ err: err.toString() }, HttpStatus.BAD_REQUEST)
@@ -106,9 +125,9 @@ export async function createShortLink(event: APIGatewayEvent): Promise<Response>
     const db = getUrlsDatabase()
     let res: CreateResult
     if (alias) {
-      res = await db.createAlias(alias, url)
+      res = await db.createAlias(clientId, alias, url)
     } else {
-      res = await db.createAuto(url)
+      res = await db.createAuto(clientId, url)
     }
     logger.info(res, 'Created entry')
     return makeResponse(res, HttpStatus.OK)

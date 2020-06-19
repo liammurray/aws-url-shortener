@@ -6,14 +6,32 @@ import { DataMapper, DynamoDbTable } from '@aws/dynamodb-data-mapper'
 import { hashKey, table, attribute } from '@aws/dynamodb-data-mapper-annotations'
 // import { MathematicalExpression, FunctionExpression, UpdateExpression } from '@aws/dynamodb-expressions'
 import _get from 'lodash.get'
+import { URL } from 'url'
 //import crypto from 'crypto'
 
 const urlEntriesTableName = envStr('TABLE_NAME_URLS')
+const clientIdIndexName = envStr('INDEX_NAME_CLIENT')
 
 const MIN_ALIAS_LENGTH = 6
+const MAX_ALIAS_LENGTH = 64
+
 // Must be at least MIN_ALIAS_LENGTH
 const ID_COUNTER = 'counter'
 const INIT_COUNTER_VALUE = 1000
+const MAX_URL_LENGTH = 1024
+const ALIAS_REGEX = /^\w+$/
+
+function isValidUrl(str: string): boolean {
+  if (str.length > MAX_URL_LENGTH) {
+    return false
+  }
+  try {
+    const url = new URL(str)
+    return ['https:'].includes(url.protocol)
+  } catch (err) {
+    return false
+  }
+}
 
 // export function createHash(str: string): string {
 //   return crypto.createHash('sha256').update(str).digest('hex')
@@ -31,7 +49,6 @@ const INIT_COUNTER_VALUE = 1000
  *  - Alias itself is used as short name
  *  - Alias must be at least MIN_ALIAS_LENGTH characters
  *      - 62^5 = 916132832 slots for counter range
- *  - The min length is a trick to eliminate collisions with counter and simplify logic
  *
  * Partition key:
  *  - The partition key (id) is the short name or alias
@@ -42,24 +59,49 @@ export class UrlEntry {
   @hashKey()
   id!: string
 
-  /** Time created */
-  @attribute({ defaultProvider: () => new Date() })
+  /**
+   * Time short URL was created
+   */
+  @attribute({
+    defaultProvider: () => new Date(),
+    indexKeyConfigurations: {
+      [clientIdIndexName]: 'RANGE',
+    },
+  })
   createdAt!: Date
 
-  /** Last access (TODO) */
-  @attribute({ defaultProvider: () => new Date() })
+  /**
+   * Time of last access for redirect
+   */
+  @attribute()
   lastAccess!: Date
 
+  /**
+   * The client that created the entry
+   */
+  @attribute({
+    indexKeyConfigurations: {
+      [clientIdIndexName]: 'HASH',
+    },
+  })
+  clientId!: string
+
   /** URL (or counter) */
+  @attribute()
   url!: string
 }
 
-export type CreateCode = 'created' | 'aliasExists' | 'aliasInvalid'
+export type CreateCode = 'created' | 'aliasExists' | 'aliasInvalid' | 'urlInvalid'
 
 export type CreateResult = {
   code: CreateCode
   msg?: string
-  id: string
+  id?: string
+  url: string
+}
+
+export type ListResult = {
+  items: UrlEntry[]
 }
 
 /**
@@ -111,29 +153,52 @@ export class UrlsDatabase {
    * Returns the short name.
    * Does not check if original URL is unique. You can call getByUrl() first.
    */
-  async createAuto(url: string): Promise<CreateResult> {
-    logger.info({ url }, 'createAuto')
-
+  async createAuto(clientId: string, url: string): Promise<CreateResult> {
+    if (!isValidUrl(url)) {
+      return {
+        code: 'urlInvalid',
+        msg: 'URL must be valid https URL and less than 1024 characters',
+        url,
+      }
+    }
     const entry = new UrlEntry()
     entry.id = await this.getNextShortName()
     entry.url = url
-    logger.info({ entry }, 'Adding entry')
+    entry.clientId = clientId
+    logger.info({ entry }, 'Adding auto-generated entry')
     await this.mapper.put(entry)
     return {
       code: 'created',
       msg: 'Generated id',
       id: entry.id,
+      url,
     }
   }
 
-  async createAlias(alias: string, url: string): Promise<CreateResult> {
-    logger.info({ alias, url }, 'createAlias')
-
-    if (alias.length < MIN_ALIAS_LENGTH) {
+  async createAlias(clientId: string, alias: string, url: string): Promise<CreateResult> {
+    if (alias.length < MIN_ALIAS_LENGTH || alias.length > MAX_ALIAS_LENGTH) {
       return {
         code: 'aliasInvalid',
-        msg: `Alias must be at least ${MIN_ALIAS_LENGTH} characters`,
+        msg: `Alias must be within ${MIN_ALIAS_LENGTH} and ${MAX_ALIAS_LENGTH} characters`,
         id: alias,
+        url,
+      }
+    }
+
+    if (!ALIAS_REGEX.test(alias)) {
+      return {
+        code: 'aliasInvalid',
+        msg: `Alias must contain only letters, numbers or underscores`,
+        id: alias,
+        url,
+      }
+    }
+
+    if (!isValidUrl(url)) {
+      return {
+        code: 'urlInvalid',
+        msg: 'URL must be valid https URL and less than 1024 characters',
+        url,
       }
     }
 
@@ -143,17 +208,21 @@ export class UrlsDatabase {
         code: 'aliasExists',
         msg: `Alias already exists`,
         id: alias,
+        url: existing.url,
       }
     }
 
     const entry = new UrlEntry()
     entry.id = alias
-    logger.info({ entry }, 'Adding entry')
+    entry.clientId = clientId
+    entry.url = url
+    logger.info({ entry }, 'Adding alias')
     await this.mapper.put(entry)
     return {
       code: 'created',
       msg: 'Added alias',
       id: entry.id,
+      url: entry.url,
     }
   }
 
@@ -164,7 +233,11 @@ export class UrlsDatabase {
     const entry = new UrlEntry()
     entry.id = id
     try {
-      return await this.mapper.get(entry)
+      //TODO: UpdateItem with ConditionalWrite (to update date if exists and return in one operation)
+      const found = await this.mapper.get(entry)
+      found.lastAccess = new Date()
+      await this.mapper.put(found)
+      return found
     } catch (err) {
       // ItemNotFoundException
       logger.info({ err }, 'get')
@@ -179,6 +252,56 @@ export class UrlsDatabase {
     } catch (err) {
       logger.info({ err }, 'delete')
     }
+  }
+
+  /**
+   * Gets entries created with given client id
+   *
+   */
+  async getEntries(clientId: string, limit?: number): Promise<ListResult> {
+    const paginator = this.mapper
+      .query(
+        UrlEntry,
+        {
+          clientId,
+        },
+        {
+          limit,
+          indexName: clientIdIndexName,
+        }
+      )
+      .pages()
+    const items: UrlEntry[] = []
+    for await (const page of paginator) {
+      items.push(...page)
+    }
+    return {
+      items,
+    }
+  }
+
+  async deleteAllEntries(clientId: string): Promise<number> {
+    const paginator = this.mapper
+      .query(
+        UrlEntry,
+        {
+          clientId,
+        },
+        {
+          indexName: clientIdIndexName,
+        }
+      )
+      .pages()
+
+    let count
+    for await (const page of paginator) {
+      console.log(JSON.stringify(page))
+      for await (const item of this.mapper.batchDelete(page)) {
+        //console.log(`Removed: ${JSON.stringify(item, null, 2)}`)
+      }
+      count += page.length
+    }
+    return count
   }
 }
 

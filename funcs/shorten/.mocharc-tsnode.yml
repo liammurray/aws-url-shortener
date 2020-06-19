@@ -1,0 +1,11 @@
+require:
+  # To use ttsc run mocha setting compiler env:
+  #    env TS_NODE_COMPILER=ttypescript mocha
+  - ts-node/register
+  - source-map-support/register
+  - test/_include.ts
+recursive: true
+spec: test/**/*.test.ts
+
+
+
