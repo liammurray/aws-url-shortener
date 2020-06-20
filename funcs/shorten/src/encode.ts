@@ -1,6 +1,5 @@
 // 0–9 a-z [A-Z]
-const CHARS36 = '0123456789abcdefghijklmnopqrstuvwxyz'
-const DIGITS = `${CHARS36}ABCDEFGHIJKLMNOPQRSTUVWXYZ`
+const DIGITS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 const map = {}
 for (let idx = 0; idx < DIGITS.length; ++idx) {
@@ -34,3 +33,7 @@ export function encode(val: number, base: number): string {
   } while (val > 0)
   return out.reverse().join('')
 }
+
+// export function createHash(str: string): string {
+//   return crypto.createHash('sha256').update(str).digest('hex')
+// }
