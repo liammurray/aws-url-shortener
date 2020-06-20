@@ -1,7 +1,7 @@
 import AWS from 'aws-sdk'
 import { logger, envStr } from './util'
 import { createDynamoClient } from './awsUtil'
-import { encodeBase62 } from './encode'
+import { encode } from './encode'
 import { DataMapper, DynamoDbTable } from '@aws/dynamodb-data-mapper'
 import { hashKey, table, attribute } from '@aws/dynamodb-data-mapper-annotations'
 // import { MathematicalExpression, FunctionExpression, UpdateExpression } from '@aws/dynamodb-expressions'
@@ -11,6 +11,11 @@ import { URL } from 'url'
 
 const urlEntriesTableName = envStr('TABLE_NAME_URLS')
 const clientIdIndexName = envStr('INDEX_NAME_CLIENT')
+
+// We can use base 36 or 62 (includes uppper case) since URL paths are case sensitive.
+// However, lower case looks better and are easier to type.
+// The downside is they are less compact.
+const ENCODE_BASE = 36 // 62
 
 const MIN_ALIAS_LENGTH = 6
 const MAX_ALIAS_LENGTH = 64
@@ -49,6 +54,7 @@ function isValidUrl(str: string): boolean {
  *  - Alias itself is used as short name
  *  - Alias must be at least MIN_ALIAS_LENGTH characters
  *      - 62^5 = 916132832 slots for counter range
+ *      - 36^5 =  60466176 slots
  *
  * Partition key:
  *  - The partition key (id) is the short name or alias
@@ -145,7 +151,7 @@ export class UrlsDatabase {
   // }
 
   async getNextShortName(): Promise<string> {
-    return encodeBase62(await this.getNextCounter())
+    return encode(await this.getNextCounter(), ENCODE_BASE)
   }
 
   /**

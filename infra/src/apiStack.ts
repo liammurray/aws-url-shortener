@@ -58,7 +58,8 @@ export default class ApiStack extends cdk.Stack {
 
     this.props = props
 
-    const table = this.createUrlEntriesTable('ShortUrls')
+    const INDEX_NAME_CLIENT = 'ClientIdIndex'
+    const table = this.createUrlEntriesTable('ShortUrls', INDEX_NAME_CLIENT)
 
     const { account, region } = cdk.Stack.of(this)
 
@@ -98,13 +99,18 @@ export default class ApiStack extends cdk.Stack {
     const envVars = {
       SERVICE_NAME: 'UrlShortener',
       TABLE_NAME_URLS: table.tableName,
+      INDEX_NAME_CLIENT,
       // Used when: AWS_SAM_LOCAL=true
       LOCAL_DDB_ENDPOINT: 'http://host.docker.internal:8000',
     }
     const func = this.createLambda(table, envVars, 'UrlFunc', 'index.urlHandler', ver)
     const funcIntegration = new apigateway.LambdaIntegration(func)
 
-    // POST /
+    // Define models
+    //   https://docs.aws.amazon.com/cdk/api/latest/docs/aws-apigateway-readme.html
+    //   get swagger from api
+
+    // POST / (Add entry)
     api.root.addMethod('POST', funcIntegration, {
       authorizationType: AuthorizationType.COGNITO,
       authorizer: {
@@ -113,7 +119,16 @@ export default class ApiStack extends cdk.Stack {
     })
     addCorsOptions(api.root)
 
-    // GET /:rootId
+    // GET / (List entries)
+    api.root.addMethod('GET', funcIntegration, {
+      authorizationType: AuthorizationType.COGNITO,
+      authorizer: {
+        authorizerId: cognitoAuth.ref,
+      },
+    })
+    addCorsOptions(api.root)
+
+    // GET /:rootId (Redirect)
     const res = api.root.addResource('{shortId}')
     addCorsOptions(res)
     res.addMethod('GET', funcIntegration)
@@ -202,7 +217,7 @@ export default class ApiStack extends cdk.Stack {
     return func
   }
 
-  private createUrlEntriesTable(tableBaseName: string): dynamodb.Table {
+  private createUrlEntriesTable(tableBaseName: string, clientIdIndexName: string): dynamodb.Table {
     const dev = true
     const tableName = `${tableBaseName}-${this.props.stage}`
     const removalPolicy = dev ? cdk.RemovalPolicy.DESTROY : cdk.RemovalPolicy.RETAIN
@@ -212,6 +227,13 @@ export default class ApiStack extends cdk.Stack {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       partitionKey: {
         name: 'id',
+        type: dynamodb.AttributeType.STRING,
+      },
+    })
+    table.addGlobalSecondaryIndex({
+      indexName: clientIdIndexName,
+      partitionKey: {
+        name: 'clientId',
         type: dynamodb.AttributeType.STRING,
       },
     })

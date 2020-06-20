@@ -19,6 +19,8 @@ Do not deploy the pipeline for now. Deploy the API manually using:
 
 `cdk deploy urls-api-dev`
 
+(Make sure you build the lambdas first.)
+
 This is because the CDK API deploy creates the route53 entry for the API in addition to deploying the API.
 
 Currently the CDK does not support API deployment via CI very well. We are awaiting this [cdk asset fix](https://github.com/aws/aws-cdk-rfcs/issues/92).

@@ -20,8 +20,6 @@
       { "transform": "typescript-transform-paths", "afterDeclarations": true }
     ],
     "sourceMap": true,
-    "inlineSourceMap": true,
-    "inlineSources": true,
     "strict": true,
     "target": "es2018"
   },

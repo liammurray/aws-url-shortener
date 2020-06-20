@@ -161,21 +161,39 @@ export async function redirect(event: APIGatewayEvent): Promise<Response> {
   }
 }
 
-type HandlerMap = { [key: string]: (event: APIGatewayEvent) => Promise<Response> }
-const handlerMap: HandlerMap = {
-  GET: redirect,
+type Handler = (event: APIGatewayEvent) => Promise<Response>
+type HandlerMap = { [key: string]: Handler }
+
+const rootHandlerMap: HandlerMap = {
+  GET: getLinks,
   POST: createShortLink,
 }
 
+const pathParamHandlerMap: HandlerMap = {
+  GET: redirect,
+}
+
 /**
- * Lambda CRUD entry point mapped based on HTTP verb
+ * Lambda CRUD entry point mapped based on HTTP resource and verb.
+ * This allows us to deploy one lambda (simplifies lambda deploy).
  *
  * POST / => create short URL
+ * GET  / => list urls for current client
  *
  * GET  /<id> => redirect to actual URL
  */
 export async function urlHandler(event: APIGatewayEvent): Promise<Response> {
-  const handler = handlerMap[event.httpMethod]
+  let handler: Handler | undefined
+  switch (event.resource) {
+    case '/':
+      handler = rootHandlerMap[event.httpMethod]
+      break
+    case '/{shortId}':
+      handler = pathParamHandlerMap[event.httpMethod]
+      break
+    default:
+      break
+  }
   if (handler) {
     return handler(event)
   }
