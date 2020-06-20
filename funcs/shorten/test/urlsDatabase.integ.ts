@@ -8,6 +8,7 @@ import { createDynamoClient } from '../src/awsUtil'
 import { DataMapper, DynamoDbTable, DynamoDbSchema } from '@aws/dynamodb-data-mapper'
 import { expect } from 'chai'
 import 'mocha'
+import { executionAsyncId } from 'async_hooks'
 
 /**
  * Response from createAuto, createAlias
@@ -43,6 +44,7 @@ const LIST_SHORTLINKS_RESPONSE_SCHEMA = {
           clientId: { type: 'string' },
           createdAt: { type: 'object', format: 'date-time' },
           lastAccess: { type: 'object', format: 'date-time' },
+          accessCount: { type: 'number'},
           url: { type: 'string' },
         },
       },
@@ -149,7 +151,8 @@ describe('Urls Integration', function () {
     expect(res2).to.include({
        id: res.id,
        url: res.url,
-       clientId: testClientId
+       clientId: testClientId,
+       accessCount: 1
     })
     expect(res2).to.contain.keys('createdAt', 'lastAccess')
   })
@@ -171,7 +174,13 @@ describe('Urls Integration', function () {
   it('should reject second alias', async function () {
     const url = 'https://www.google.com'
     const alias = 'batman'
-    await addAlias(alias, url)
+    const addRes = await addAlias(alias, url)
+    expect(addRes).to.eql({
+      code: 'created',
+      msg: 'Added alias',
+      id: alias,
+      url
+    })
     const res = await udb.createAlias(testClientId, alias, url)
     expect(res).to.be.jsonSchema(CREATE_SHORTLINK_RESPONSE_SCHEMA)
     dump(res)

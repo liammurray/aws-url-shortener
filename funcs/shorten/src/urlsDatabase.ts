@@ -2,7 +2,7 @@ import AWS from 'aws-sdk'
 import { logger, envStr } from './util'
 import { createDynamoClient } from './awsUtil'
 import { encode } from './encode'
-import { DataMapper, DynamoDbTable } from '@aws/dynamodb-data-mapper'
+import { DataMapper, DynamoDbTable, ItemNotFoundException } from '@aws/dynamodb-data-mapper'
 import { hashKey, table, attribute } from '@aws/dynamodb-data-mapper-annotations'
 // import { MathematicalExpression, FunctionExpression, UpdateExpression } from '@aws/dynamodb-expressions'
 import _get from 'lodash.get'
@@ -77,6 +77,12 @@ export class UrlEntry {
    */
   @attribute()
   lastAccess!: Date
+
+  /**
+   * How many times accessed
+   */
+  @attribute()
+  accessCount!: number
 
   /**
    * The client that created the entry
@@ -167,6 +173,7 @@ export class UrlsDatabase {
     entry.id = await this.getNextShortName()
     entry.url = url
     entry.clientId = clientId
+    entry.accessCount = 0
     logger.info({ entry }, 'Adding auto-generated entry')
     await this.mapper.put(entry)
     return {
@@ -218,6 +225,7 @@ export class UrlsDatabase {
     entry.id = alias
     entry.clientId = clientId
     entry.url = url
+    entry.accessCount = 0
     logger.info({ entry }, 'Adding alias')
     await this.mapper.put(entry)
     return {
@@ -238,11 +246,14 @@ export class UrlsDatabase {
       //TODO: UpdateItem with ConditionalWrite (to update date if exists and return in one operation)
       const found = await this.mapper.get(entry)
       found.lastAccess = new Date()
+      found.accessCount += 1
       await this.mapper.put(found)
       return found
     } catch (err) {
-      // ItemNotFoundException
-      logger.info({ err }, 'get')
+      if (err.name != 'ItemNotFoundException') {
+        logger.info({ err }, 'get')
+        throw err
+      }
     }
   }
 
@@ -252,7 +263,10 @@ export class UrlsDatabase {
     try {
       await this.mapper.delete(entry)
     } catch (err) {
-      logger.info({ err }, 'delete')
+      if (err.name != 'ItemNotFoundException') {
+        logger.info({ err }, 'get')
+        throw err
+      }
     }
   }
 
