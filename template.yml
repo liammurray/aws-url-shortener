@@ -48,10 +48,11 @@ Resources:
       # Should only contain attributes that are used as KeySchema for the table and its indexes
       AttributeDefinitions:
         - AttributeName: id
-          AttributeType: N
+          AttributeType: S
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+
 
 
 

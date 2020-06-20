@@ -106,6 +106,8 @@ export default class ApiStack extends cdk.Stack {
     const func = this.createLambda(table, envVars, 'UrlFunc', 'index.urlHandler', ver)
     const funcIntegration = new apigateway.LambdaIntegration(func)
 
+    addCorsOptions(api.root)
+
     // Define models
     //   https://docs.aws.amazon.com/cdk/api/latest/docs/aws-apigateway-readme.html
     //   get swagger from api
@@ -117,7 +119,6 @@ export default class ApiStack extends cdk.Stack {
         authorizerId: cognitoAuth.ref,
       },
     })
-    addCorsOptions(api.root)
 
     // GET / (List entries)
     api.root.addMethod('GET', funcIntegration, {
@@ -126,7 +127,6 @@ export default class ApiStack extends cdk.Stack {
         authorizerId: cognitoAuth.ref,
       },
     })
-    addCorsOptions(api.root)
 
     // GET /:rootId (Redirect)
     const res = api.root.addResource('{shortId}')

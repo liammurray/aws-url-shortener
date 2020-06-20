@@ -43,13 +43,6 @@ To destroy:
 make destroy
 ```
 
-## TODO
-
-- Support custom name as in: `http://u.example.com/custom_name`
-- Validate submitted URL
-- Expiration
-- Frontend (React)
-
 ## Local
 
 ### Dynamo
