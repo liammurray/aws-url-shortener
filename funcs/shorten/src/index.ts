@@ -139,7 +139,8 @@ export async function createShortLink(event: APIGatewayEvent): Promise<Response>
 /**
  * GET /:{id}
  *
- * Returns HTTP 302 redriect to real URL.
+ * Returns REDIRECT (302) to mapped URL.
+ * Returns NOT_FOUND (404) if ID does not exist.
  */
 export async function redirect(event: APIGatewayEvent): Promise<Response> {
   logger.info(event, 'redirect')
@@ -152,12 +153,13 @@ export async function redirect(event: APIGatewayEvent): Promise<Response> {
   try {
     const db = getUrlsDatabase()
     const ent = await db.getById(id)
-    if (!ent || !ent.url) {
-      return makeResponse({ id }, HttpStatus.NOT_FOUND)
+    if (ent?.url) {
+      return makeRedirectResponse(ent.url)
     }
-    return makeRedirectResponse(ent.url)
+    return makeResponse({ id }, HttpStatus.NOT_FOUND)
   } catch (err) {
-    return makeResponse({}, HttpStatus.INTERNAL_SERVER_ERROR, err)
+    // Return 404 for any error (usually means bad ID format)
+    return makeResponse({ id }, HttpStatus.NOT_FOUND)
   }
 }
 

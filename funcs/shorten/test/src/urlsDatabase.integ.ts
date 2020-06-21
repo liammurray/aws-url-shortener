@@ -1,10 +1,10 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="chai-missing.d.ts"/>
-import { UrlsDatabase, UrlEntry } from '../src/urlsDatabase'
+import { UrlsDatabase, UrlEntry, CreateResult} from '../../src/urlsDatabase'
 
 import { hostname } from 'os'
 import { hrtime } from 'process'
-import { createDynamoClient } from '../src/awsUtil'
+import { createDynamoClient } from '../../src/awsUtil'
 import { DataMapper, DynamoDbTable } from '@aws/dynamodb-data-mapper'
 import { expect } from 'chai'
 import 'mocha'
@@ -97,24 +97,24 @@ describe('Urls Integration', function () {
     })
     udb = new UrlsDatabase(ddb)
   })
-  after(function () {
+  after(async function () {
     if (!TABLE_NAME_INTEGRATION_TEST) {
       console.log(`Removing table: ${tableName}`)
+      await mapper.ensureTableNotExists(UrlEntry)
       UrlEntry.prototype[DynamoDbTable] = oldTableName
-      return mapper.ensureTableNotExists(UrlEntry)
     }
   })
   beforeEach(function() {
     return udb.deleteAllEntries(testClientId)
   })
 
-  async function addAuto(longUrl: string) {
+  async function addAuto(longUrl: string): Promise<CreateResult> {
     const res = await udb.createAuto(testClientId, longUrl)
     expect(res).to.be.jsonSchema(CREATE_SHORTLINK_RESPONSE_SCHEMA)
     return res
   }
 
-   async function addAlias(alias: string, longUrl: string) {
+   async function addAlias(alias: string, longUrl: string): Promise<CreateResult> {
     const res = await udb.createAlias(testClientId, alias, longUrl)
     expect(res).to.be.jsonSchema(CREATE_SHORTLINK_RESPONSE_SCHEMA)
     return res
@@ -217,7 +217,28 @@ describe('Urls Integration', function () {
       const reversed = res.items.map(i=>i.url).reverse()
       expect(urls).to.eql(reversed)
     })
+
+    it('should delete batch entries', async function() {
+      const urls = ['https://www.google.com', 'https://www.google.com','https://www.cnn.com', 'https://www.microsoft.com']
+
+      let ids: string[] = []
+      for (const u of urls) {
+        const cr = await addAuto(u)
+        expect(cr.id).to.exist
+        ids.push(cr.id!)
+        this.clock.tick(62000)
+      }
+      expect(ids.length).to.equal(urls.length)
+
+      // Delete first and last
+      const deleted = await udb.deleteByIdBatch([ids[0], ids[3]])
+      expect(deleted).to.equal(2)
+
+      const expected = urls.slice(1,3).reverse()
+      const res = await udb.getEntries(testClientId)
+      expect(res.items.length).to.equal(2)
+      const urlsPostDelete = res.items.map(i=>i.url)
+      expect(urlsPostDelete).to.eql(expected)
+    })
   })
-
-
 })

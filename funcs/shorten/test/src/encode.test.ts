@@ -1,5 +1,5 @@
 import chai from 'chai'
-import { encode, decode } from '../src/encode'
+import { encode, decode } from '../../src/encode'
 const expect = chai.expect
 import 'mocha'
 

@@ -55,8 +55,30 @@ function isValidUrl(str: string): boolean {
  * Partition key:
  *  - The partition key (id) is the short name or alias
  */
+
+type CreateNewParams = {
+  clientId: string
+  id: string
+  url: string
+}
 @table(urlEntriesTableName)
 export class UrlEntry {
+  static createNew(params: CreateNewParams): UrlEntry {
+    const entry = new UrlEntry()
+    entry.id = params.id
+    entry.url = params.url
+    entry.clientId = params.clientId
+    entry.accessCount = 0
+    entry.createdAt = new Date()
+    return entry
+  }
+
+  static forIdLookup(id: string): UrlEntry {
+    const entry = new UrlEntry()
+    entry.id = id
+    return entry
+  }
+
   /** Partition key */
   @hashKey()
   id!: string
@@ -169,11 +191,12 @@ export class UrlsDatabase {
         url,
       }
     }
-    const entry = new UrlEntry()
-    entry.id = await this.getNextShortName()
-    entry.url = url
-    entry.clientId = clientId
-    entry.accessCount = 0
+    const entry = UrlEntry.createNew({
+      id: await this.getNextShortName(),
+      url,
+      clientId,
+    })
+
     logger.info({ entry }, 'Adding auto-generated entry')
     await this.mapper.put(entry)
     return {
@@ -221,11 +244,12 @@ export class UrlsDatabase {
       }
     }
 
-    const entry = new UrlEntry()
-    entry.id = alias
-    entry.clientId = clientId
-    entry.url = url
-    entry.accessCount = 0
+    const entry = UrlEntry.createNew({
+      id: alias,
+      url,
+      clientId,
+    })
+
     logger.info({ entry }, 'Adding alias')
     await this.mapper.put(entry)
     return {
@@ -258,8 +282,7 @@ export class UrlsDatabase {
   }
 
   async deleteById(id: string): Promise<void> {
-    const entry = new UrlEntry()
-    entry.id = id
+    const entry = UrlEntry.forIdLookup(id)
     try {
       await this.mapper.delete(entry)
     } catch (err) {
@@ -268,6 +291,17 @@ export class UrlsDatabase {
         throw err
       }
     }
+  }
+
+  async deleteByIdBatch(ids: string[]): Promise<number> {
+    const entries = ids.map(UrlEntry.forIdLookup)
+    // Not sure what this does if item not found, etc.
+    let count = 0
+    for await (const item of this.mapper.batchDelete(entries)) {
+      //console.log(`Removed: ${JSON.stringify(item, null, 2)}`)
+      ++count
+    }
+    return count
   }
 
   /**
