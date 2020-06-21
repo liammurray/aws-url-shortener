@@ -156,10 +156,10 @@ export async function redirect(event: APIGatewayEvent): Promise<Response> {
     if (ent?.url) {
       return makeRedirectResponse(ent.url)
     }
-    return makeResponse({ id }, HttpStatus.NOT_FOUND)
+    return makeResponse(undefined, HttpStatus.NOT_FOUND)
   } catch (err) {
     // Return 404 for any error (usually means bad ID format)
-    return makeResponse({ id }, HttpStatus.NOT_FOUND)
+    return makeResponse(undefined, HttpStatus.NOT_FOUND)
   }
 }
 

@@ -36,7 +36,7 @@ const config = {
     userPoolWebClientId: '{{ o['clientId'] }}',
     identityPoolId: '{{ o['identityPoolId'] }}',
     authenticationFlowType: 'USER_SRP_AUTH',
-    mandatorySignIn: false
+    mandatorySignIn: false,
   },
   API: {
     endpoints: [
