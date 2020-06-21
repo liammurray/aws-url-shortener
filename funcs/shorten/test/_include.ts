@@ -1,10 +1,13 @@
 import chai from 'chai'
 import chaiJsonSchema from 'chai-json-schema-ajv'
+import sinonChai from 'sinon-chai'
 
-chai.use(
+chai.use(sinonChai).use(
   chaiJsonSchema.withOptions({
-    verbose: true,
+    //verbose: true,
     allErrors: true,
+    // Specific to swagger not json-schema spec
+    unknownFormats: ['int32'],
   })
 )
 

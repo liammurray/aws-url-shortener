@@ -5,10 +5,10 @@ import { UrlsDatabase, UrlEntry } from '../src/urlsDatabase'
 import { hostname } from 'os'
 import { hrtime } from 'process'
 import { createDynamoClient } from '../src/awsUtil'
-import { DataMapper, DynamoDbTable, DynamoDbSchema } from '@aws/dynamodb-data-mapper'
+import { DataMapper, DynamoDbTable } from '@aws/dynamodb-data-mapper'
 import { expect } from 'chai'
 import 'mocha'
-import { executionAsyncId } from 'async_hooks'
+import sinon from 'sinon'
 
 /**
  * Response from createAuto, createAlias
@@ -192,12 +192,31 @@ describe('Urls Integration', function () {
     })
   })
 
-   it('should get entries', async function() {
-    await Promise.all([addAuto('https://www.google.com'), addAuto('https://www.xealth.io')])
-    const res = await udb.getEntries(testClientId)
-    dump(res)
-    expect(res).to.be.jsonSchema(LIST_SHORTLINKS_RESPONSE_SCHEMA)
-    expect(res.items.length).to.equal(2)
+  describe('with fake timers', function() {
+
+    beforeEach(function() {
+      this.clock = sinon.useFakeTimers(Date.now())
+    })
+
+    afterEach(function() {
+      this.clock.restore()
+    })
+
+    it('should get entries', async function() {
+      const urls = ['https://www.google.com', 'https://www.google.com','https://www.cnn.com']
+      for (const u of urls) {
+        await addAuto(u)
+        this.clock.tick(1000)
+      }
+
+      const res = await udb.getEntries(testClientId)
+      dump(res)
+      expect(res).to.be.jsonSchema(LIST_SHORTLINKS_RESPONSE_SCHEMA)
+      expect(res.items.length).to.equal(urls.length)
+      // Most recently added (last in urls) first
+      const reversed = res.items.map(i=>i.url).reverse()
+      expect(urls).to.eql(reversed)
+    })
   })
 
 
