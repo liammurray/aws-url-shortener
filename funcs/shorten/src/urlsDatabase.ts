@@ -272,9 +272,10 @@ export class UrlsDatabase {
 
   /**
    * Gets entries created with given client id
+   * By default in reverse order of creation (most recent first)
    *
    */
-  async getEntries(clientId: string, limit?: number): Promise<ListResult> {
+  async getEntries(clientId: string, limit?: number, scanForward?: boolean): Promise<ListResult> {
     const paginator = this.mapper
       .query(
         UrlEntry,
@@ -284,6 +285,7 @@ export class UrlsDatabase {
         {
           limit,
           indexName: clientIdIndexName,
+          scanIndexForward: !!scanForward,
         }
       )
       .pages()
