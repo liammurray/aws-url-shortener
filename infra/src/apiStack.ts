@@ -136,15 +136,9 @@ export default class ApiStack extends cdk.Stack {
     const rec = this.addRoute53(dnsName, api)
 
     // Outputs (nice)
-    new cdk.CfnOutput(this, 'ApiId', {
-      value: api.restApiId,
-    })
-    new cdk.CfnOutput(this, 'ApiUrl', {
-      value: api.url,
-    })
-    new cdk.CfnOutput(this, 'DomainName', {
-      value: rec.domainName,
-    })
+    this.output('ApiId', api.restApiId)
+    this.output('ApiUrl', api.url)
+    this.output('DomainName', rec.domainName)
   }
 
   private createCognitoAuthorizer(api: apigateway.RestApi, userPoolId: string): CfnAuthorizer {
@@ -237,6 +231,20 @@ export default class ApiStack extends cdk.Stack {
         type: dynamodb.AttributeType.STRING,
       },
     })
+    this.output(`${tableBaseName}`, table.tableName)
+    this.output(`${tableName}Arn`, table.tableArn)
     return table
+  }
+
+  private export(exportName: string, value: string): void {
+    new cdk.CfnOutput(this, exportName, {
+      value,
+      exportName,
+    })
+  }
+  private output(name: string, value: string): void {
+    new cdk.CfnOutput(this, name, {
+      value,
+    })
   }
 }
