@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button, Tooltip, Input } from 'antd'
 import { toUrlString } from '../utils/strUtils'
-
+import UrlSubmitResult from './urlSubmitResult'
 import UrlsApi, { CreateResult, MAX_URL_LENGTH } from '../utils/urlsApi'
 
 function isValidUrl(str: string): boolean {
@@ -96,7 +96,8 @@ export default class UrlSubmit extends React.Component<Props, State> {
             </Button>
           </Tooltip>
         </div>
-        <h2>{link}</h2>
+
+        <UrlSubmitResult baseUrl={this.props.urlsApi.baseUrl} result={this.state.result} />
       </div>
     )
   }

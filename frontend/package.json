@@ -13,6 +13,7 @@
     "@types/react-dom": "^16.9.8",
     "antd": "^4.3.4",
     "aws-amplify": "^3.0.17",
+    "copy-to-clipboard": "^3.3.1",
     "date-fns": "^2.14.0",
     "jwt-decode": "^2.2.0",
     "password-validator": "^5.0.3",
@@ -20,6 +21,7 @@
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
+    "save": "^2.4.0",
     "styled-components": "^5.1.1",
     "typescript": "~3.9.5",
     "url-parse": "^1.4.7"

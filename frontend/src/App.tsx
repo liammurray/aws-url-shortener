@@ -6,14 +6,14 @@ import UrlList from './components/urlList'
 import UrlSubmit from './components/urlSubmit'
 import UrlsApi from './utils/urlsApi'
 
-const { Header, Content } = Layout
+const { Content } = Layout
 const urlsApi = new UrlsApi()
 
 export default function App(): JSX.Element {
   return (
-    <div>
+    <div className="App">
       <Layout>
-        <Header heading-color="white">Url Shortener</Header>
+        <h1>Nod15c Url Shortener</h1>
         <Content>
           <UrlSubmit urlsApi={urlsApi} />
           <UrlList urlsApi={urlsApi} />
