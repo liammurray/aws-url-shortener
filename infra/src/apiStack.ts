@@ -230,6 +230,10 @@ export default class ApiStack extends cdk.Stack {
         name: 'clientId',
         type: dynamodb.AttributeType.STRING,
       },
+      sortKey: {
+        name: 'createdAt',
+        type: dynamodb.AttributeType.NUMBER,
+      },
     })
     this.output(`${tableBaseName}`, table.tableName)
     this.output(`${tableName}Arn`, table.tableArn)
