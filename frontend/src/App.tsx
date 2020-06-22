@@ -3,8 +3,10 @@ import { Layout } from 'antd'
 import 'antd/dist/antd.css'
 
 import UrlList from './components/urlList'
-import UrlSubmit from './components/urlSubmit'
+import UrlSubmitForm from './components/urlSubmitForm'
 import UrlsApi from './utils/urlsApi'
+
+import './styles.css'
 
 const { Content } = Layout
 const urlsApi = new UrlsApi()
@@ -15,7 +17,7 @@ export default function App(): JSX.Element {
       <Layout>
         <h1>Nod15c Url Shortener</h1>
         <Content>
-          <UrlSubmit urlsApi={urlsApi} />
+          <UrlSubmitForm urlsApi={urlsApi} />
           <UrlList urlsApi={urlsApi} />
         </Content>
       </Layout>

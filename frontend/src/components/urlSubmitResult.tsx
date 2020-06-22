@@ -25,17 +25,7 @@ export default class UrlSubmitResult extends React.Component<Props> {
   public static defaultProps: Partial<Props> = {}
 
   getError(result: CreateResult): JSX.Element {
-    return (
-      <Result
-        status="error"
-        title="Submission Failed"
-        subTitle={result.msg || result.code}
-        extra={[
-          <Button type="primary" key="tryAgain">
-            Try Again
-          </Button>,
-        ]}></Result>
-    )
+    return <Result status="error" title="Submission Failed" subTitle={result.msg || result.code} />
   }
 
   copyLink = () => {
