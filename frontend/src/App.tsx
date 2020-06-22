@@ -1,7 +1,6 @@
 import React from 'react'
 import { Layout } from 'antd'
-import 'antd/dist/antd.css'
-
+import './app.less'
 import UrlList from './components/urlList'
 import UrlSubmitForm from './components/urlSubmitForm'
 import UrlsApi from './utils/urlsApi'

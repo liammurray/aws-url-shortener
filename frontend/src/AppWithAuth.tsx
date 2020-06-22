@@ -7,8 +7,8 @@ import {
   AmplifySignUp,
 } from '@aws-amplify/ui-react'
 import React from 'react'
-import config from './Amplify/config'
-import App from './App'
+import config from './amplify/config'
+import App from './app'
 
 Amplify.configure(config)
 
