@@ -1,6 +1,6 @@
 import * as apigateway from '@aws-cdk/aws-apigateway'
 
-export function addCorsOptions(apiResource: apigateway.IResource) {
+export function addCorsOptions(apiResource: apigateway.IResource): void {
   apiResource.addMethod(
     'OPTIONS',
     new apigateway.MockIntegration({

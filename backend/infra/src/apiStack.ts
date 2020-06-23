@@ -211,6 +211,10 @@ export default class ApiStack extends cdk.Stack {
     return func
   }
 
+  /**
+   * Needs to conform with dynamodb datamapper "UrlEntry" in urlsDatabase.ts
+   * It might be better to let code manage database (not manager in infra)
+   */
   private createUrlEntriesTable(tableBaseName: string, clientIdIndexName: string): dynamodb.Table {
     const dev = true
     const tableName = `${tableBaseName}-${this.props.stage}`

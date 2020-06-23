@@ -15,7 +15,7 @@ export default class BuildPipelineStack extends cdk.Stack {
     const pipelineOpts: BuildPipelineProps = {
       ...baseOpts,
       // Use SAM for now
-      buildSpec: 'buildspec-sam.yml',
+      buildSpec: 'backend/buildspec-sam.yml',
       stageDev: {
         // Should match Makefile if you want to deploy with make deploy from laptop
         stackName: `${serviceName}-dev`,
@@ -42,6 +42,7 @@ export default class BuildPipelineStack extends cdk.Stack {
 //     const baseOpts = makeBaseProps(this, serviceName, 'master')
 //     const pipelineOpts: BuildPipelineProps = {
 //       ...baseOpts,
+//       buildSpec: 'backend/buildspec.yml',
 //       stageDev: {
 //         stackName: `${serviceName}-dev`,
 //         deployTemplate: `${props.devApiStackName}.template.json`,

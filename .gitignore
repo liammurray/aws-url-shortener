@@ -1,6 +1,6 @@
 .DS_Store
 .vscode
-.terraform/
+.terraform
 .serverless
 *.zip
 *.tfstate
