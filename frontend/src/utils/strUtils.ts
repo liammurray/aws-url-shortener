@@ -14,14 +14,19 @@ export function makeUrl(url: string, path?: string): Url {
 /**
  * https://u.nod15c.com/path
  */
-export function formatUrl(url: string, path?: string): Url {
+export function formatUrl(url: string, path?: string): string {
   return makeUrl(url, path).href
 }
 
 /**
  * u.nod15c.com
  */
-export function formatUrlNoProto(url: string, path?: string): Url {
+export function formatUrlNoProto(url: string, path?: string): string {
   const u = makeUrl(url, path)
   return u.href.slice(u.protocol.length + 2)
+}
+
+export function formatUrlPathOnly(url: string): string {
+  const u = new Url(url)
+  return `${u.origin}${u.pathname}`
 }

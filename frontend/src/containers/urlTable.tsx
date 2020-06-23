@@ -1,11 +1,13 @@
 import React from 'react'
 import { DeleteOutlined } from '@ant-design/icons'
 import { ColumnsType } from 'antd/es/table'
-import { Button, Tooltip, Table, Popconfirm, Space } from 'antd'
-import { formatUrl, formatDate } from '../utils/strUtils'
+import { Button, Tooltip, Table, Popconfirm, Space, Typography } from 'antd'
+import { formatUrl, formatDate, formatUrlPathOnly } from '../utils/strUtils'
 import ResizeableTitle from '../components/resizeableTitle'
 
 import UrlsApi, { UrlEntry } from '../utils/urlsApi'
+
+const { Text } = Typography
 
 export function renderDate(iso: string): JSX.Element {
   const text = iso ? formatDate(iso) : ''
@@ -65,7 +67,7 @@ export default class UrlTable extends React.Component<Props, State> {
         key: 'url',
         render: (url): JSX.Element => (
           <Tooltip placement="topLeft" title={url}>
-            {url}
+            <Text>{formatUrlPathOnly(url)}</Text>
           </Tooltip>
         ),
         //ellipsis: true, <- enables ellipse on all column titles
