@@ -26,16 +26,14 @@ const INIT_COUNTER_VALUE = 1000
 const MAX_URL_LENGTH = 1024
 const ALIAS_REGEX = /^\w+$/
 
+const httpUrlSchemeRegex = /^https?:\/\/.+/
+
 function isValidUrl(str: string): boolean {
   if (str.length > MAX_URL_LENGTH) {
     return false
   }
-  try {
-    const url = new URL(str)
-    return ['https:'].includes(url.protocol)
-  } catch (err) {
-    return false
-  }
+
+  return httpUrlSchemeRegex.test(str)
 }
 
 /**
@@ -229,7 +227,7 @@ export class UrlsDatabase {
     if (!isValidUrl(url)) {
       return {
         code: 'urlInvalid',
-        msg: 'URL must be valid https URL and less than 1024 characters',
+        msg: 'URL must begin with https (or http) and be less than 1024 characters',
         url,
       }
     }
