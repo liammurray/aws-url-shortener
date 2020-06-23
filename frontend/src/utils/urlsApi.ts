@@ -23,6 +23,17 @@ export type UrlEntry = {
   url: string
 }
 
+const httpUrlSchemeRegex = /^https?:\/\/.+/
+
+// Very basic validation
+export function isValidUrl(str: string): boolean {
+  if (str.length > MAX_URL_LENGTH) {
+    return false
+  }
+
+  return httpUrlSchemeRegex.test(str)
+}
+
 export default class UrlsApi {
   public readonly baseUrl
 

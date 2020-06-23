@@ -1,6 +1,6 @@
 import React from 'react'
 import { Result, Button, Tooltip, Typography } from 'antd'
-import { toUrlString } from '../utils/strUtils'
+import { formatUrlNoProto, formatUrl } from '../utils/strUtils'
 import { SmileOutlined, CopyOutlined } from '@ant-design/icons'
 import copy from 'copy-to-clipboard'
 import { CreateResult } from '../utils/urlsApi'
@@ -21,51 +21,46 @@ type Props = {
 //   url: string
 // }
 
+const ErrorResult = (result: CreateResult): JSX.Element => {
+  return <Result status="error" title="Submission Failed" subTitle={result.msg || result.code} />
+}
+
+const SuccessResult = (baseUrl, result, copyLink): JSX.Element => {
+  const id = result.id
+  const link = formatUrl(baseUrl, id)
+  const displayLink = formatUrlNoProto(baseUrl, id)
+
+  const extra = (
+    <div className="Result">
+      <Button size="large" type="link" href={link}>
+        {displayLink}
+      </Button>
+      <Tooltip title="Copy Link">
+        <Button type="ghost" icon={<CopyOutlined />} onClick={copyLink} disabled={!id} />
+      </Tooltip>
+    </div>
+  )
+
+  return (
+    <div>
+      <Result icon={<SmileOutlined />} extra={extra} />
+    </div>
+  )
+}
+
 export default class UrlSubmitResult extends React.Component<Props> {
   public static defaultProps: Partial<Props> = {}
 
-  getError(result: CreateResult): JSX.Element {
-    return <Result status="error" title="Submission Failed" subTitle={result.msg || result.code} />
-  }
-
   copyLink = () => {
     const id = this.props.result.id
-    copy(toUrlString(this.props.baseUrl, id))
-  }
-
-  getSuccess(result: CreateResult): JSX.Element {
-    const id = this.props.result.id
-    const link = id ? toUrlString(this.props.baseUrl, id) : ''
-
-    const extra = (
-      <div className="desc">
-        <Text
-          strong
-          style={{
-            fontSize: 18,
-          }}>
-          Your link:
-        </Text>
-        <Button size="large" type="link" href={link}>
-          {link}
-        </Button>
-        <Tooltip title="Copy Link">
-          <Button type="ghost" icon={<CopyOutlined />} onClick={this.copyLink} disabled={!id} />
-        </Tooltip>
-      </div>
-    )
-
-    return (
-      <div>
-        <Result icon={<SmileOutlined />} extra={extra} />
-      </div>
-    )
+    copy(formatUrl(this.props.baseUrl, id))
   }
 
   render(): JSX.Element | null {
     const res = this.props.result
     if (res) {
-      return res.code === 'created' ? this.getSuccess(res) : this.getError(res)
+      const baseUrl = this.props.baseUrl
+      return res.code === 'created' ? SuccessResult(baseUrl, res, this.copyLink) : ErrorResult(res)
     }
     return null
   }

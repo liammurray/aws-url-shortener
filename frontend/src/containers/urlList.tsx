@@ -1,10 +1,12 @@
 import React from 'react'
 import { DeleteOutlined } from '@ant-design/icons'
 import { ColumnsType } from 'antd/es/table'
-import { Button, Tooltip, Table, Popconfirm, Divider } from 'antd'
-import { toUrlString, formatDate } from '../utils/strUtils'
+import { Button, Tooltip, Table, Typography, Popconfirm, Space } from 'antd'
+import { formatUrl, formatDate } from '../utils/strUtils'
 
 import UrlsApi, { UrlEntry } from '../utils/urlsApi'
+
+const { Text } = Typography
 
 export function renderDate(iso: string): JSX.Element {
   const text = iso ? formatDate(iso) : ''
@@ -53,7 +55,7 @@ export default class UrlList extends React.Component<Props, State> {
         title: 'ID',
         dataIndex: 'id',
         key: 'id',
-        render: (id: string): JSX.Element => <a href={toUrlString(baseUrl, id)}>{id}</a>,
+        render: (id: string): JSX.Element => <a href={formatUrl(baseUrl, id)}>{id}</a>,
       },
       {
         title: 'URL',
@@ -98,32 +100,24 @@ export default class UrlList extends React.Component<Props, State> {
       onChange: this.onSelectChange,
     }
 
-    const hasSelected = selectedRowKeys.length > 0
-
-    // delete selected
-
-    // <Popconfirm title="Delete?" onConfirm={() => onDelete(item.id)}>
-    //   <Button>Delete</Button>
-    // </Popconfirm>
+    const selectCount = selectedRowKeys.length
 
     return (
       <div>
-        <div style={{ marginBottom: 16 }}>
+        <Space>
           <Button type="primary" onClick={this.fetch} loading={loading}>
-            Update
+            Fetch Recent Links
           </Button>
 
-          <span style={{ marginLeft: 8 }}>
-            {hasSelected ? `Selected ${selectedRowKeys.length} items` : ''}
-          </span>
-
-          <Popconfirm title="Remove selected URLs?" onConfirm={this.deleteSelected}>
+          <Popconfirm
+            title={`Remove items (${selectCount} selected)?`}
+            onConfirm={this.deleteSelected}
+            disabled={!selectCount}>
             <Tooltip title="Remove">
-              <Button icon={<DeleteOutlined />} disabled={!hasSelected} />
+              <Button icon={<DeleteOutlined />} disabled={!selectCount} />
             </Tooltip>
           </Popconfirm>
-        </div>
-        <Divider />
+        </Space>
 
         <Table
           rowKey="id"
