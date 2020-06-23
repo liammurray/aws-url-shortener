@@ -1,12 +1,11 @@
 import React from 'react'
 import { DeleteOutlined } from '@ant-design/icons'
 import { ColumnsType } from 'antd/es/table'
-import { Button, Tooltip, Table, Typography, Popconfirm, Space } from 'antd'
+import { Button, Tooltip, Table, Popconfirm, Space } from 'antd'
 import { formatUrl, formatDate } from '../utils/strUtils'
+import ResizeableTitle from '../components/resizeableTitle'
 
 import UrlsApi, { UrlEntry } from '../utils/urlsApi'
-
-const { Text } = Typography
 
 export function renderDate(iso: string): JSX.Element {
   const text = iso ? formatDate(iso) : ''
@@ -22,9 +21,10 @@ type State = {
   loading: boolean
   editMode: boolean
   items: UrlEntry[]
+  cols: ColumnsType<UrlEntry>
 }
 
-export default class UrlList extends React.Component<Props, State> {
+export default class UrlTable extends React.Component<Props, State> {
   public static defaultProps: Partial<Props> = {}
 
   public state: State = {
@@ -32,6 +32,7 @@ export default class UrlList extends React.Component<Props, State> {
     loading: false,
     editMode: false,
     items: [],
+    cols: this.getColumns(),
   }
 
   componentDidMount() {
@@ -55,25 +56,34 @@ export default class UrlList extends React.Component<Props, State> {
         title: 'ID',
         dataIndex: 'id',
         key: 'id',
-        render: (id: string): JSX.Element => <a href={formatUrl(baseUrl, id)}>{id}</a>,
+        render: (id): JSX.Element => <a href={formatUrl(baseUrl, id)}>{id}</a>,
+        width: 200,
       },
       {
         title: 'URL',
         dataIndex: 'url',
         key: 'url',
-        render: (url: string): JSX.Element => <a href={url}>{url}</a>,
+        render: (url): JSX.Element => (
+          <Tooltip placement="topLeft" title={url}>
+            {url}
+          </Tooltip>
+        ),
+        ellipsis: true,
+        width: 400,
       },
       {
         title: 'Created',
         dataIndex: 'createdAt',
         key: 'createdAt',
         render: renderDate,
+        width: 200,
       },
       {
         title: 'Last Access',
         dataIndex: 'lastAccess',
         key: 'lastAccess',
         render: renderDate,
+        width: 200,
       },
       {
         title: 'Access count',
@@ -91,8 +101,28 @@ export default class UrlList extends React.Component<Props, State> {
     console.log('deleteSelected')
   }
 
+  handleResize = index => (e, { size }) => {
+    this.setState(({ cols }) => {
+      const next = [...cols]
+      next[index].width = size.width
+      return { cols: next }
+    })
+  }
+
   render() {
-    const columns = this.getColumns()
+    const columns: any = this.state.cols.map((c, index) => ({
+      ...c,
+      onHeaderCell: col => ({
+        width: col.width,
+        onResize: this.handleResize(index),
+      }),
+    }))
+
+    const components = {
+      header: {
+        cell: ResizeableTitle,
+      },
+    }
 
     const { loading, selectedRowKeys } = this.state
     const rowSelection = {
@@ -103,7 +133,7 @@ export default class UrlList extends React.Component<Props, State> {
     const selectCount = selectedRowKeys.length
 
     return (
-      <div>
+      <div className="UrlSubmitTable">
         <Space>
           <Button type="primary" onClick={this.fetch} loading={loading}>
             Fetch Recent Links
@@ -121,9 +151,11 @@ export default class UrlList extends React.Component<Props, State> {
 
         <Table
           rowKey="id"
+          bordered
+          components={components}
           rowSelection={rowSelection}
           dataSource={this.state.items}
-          columns={columns}
+          columns={columns as any}
         />
       </div>
     )

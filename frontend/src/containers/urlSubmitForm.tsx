@@ -2,7 +2,7 @@ import React from 'react'
 import { Button, Tooltip, Input, Space } from 'antd'
 import { formatUrlNoProto } from '../utils/strUtils'
 import UrlSubmitResult from '../components/urlSubmitResult'
-import UrlsApi, { CreateResult, isValidUrl, MAX_URL_LENGTH } from '../utils/urlsApi'
+import UrlsApi, { CreateResult, isValidUrl } from '../utils/urlsApi'
 
 type Props = {
   urlsApi: UrlsApi
@@ -34,7 +34,7 @@ export default class UrlSubmitForm extends React.Component<Props, State> {
     this.setState({ loading: true, result: undefined })
 
     const result = await this.props.urlsApi.createShortLink(this.state.url, this.state.alias)
-    if (result.code == 'created') {
+    if (result.code === 'created') {
       this.setState({
         loading: false,
         result,

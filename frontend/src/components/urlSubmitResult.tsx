@@ -1,11 +1,9 @@
 import React from 'react'
-import { Result, Button, Tooltip, Typography } from 'antd'
+import { Result, Button, Tooltip } from 'antd'
 import { formatUrlNoProto, formatUrl } from '../utils/strUtils'
 import { SmileOutlined, CopyOutlined } from '@ant-design/icons'
 import copy from 'copy-to-clipboard'
 import { CreateResult } from '../utils/urlsApi'
-
-const { Text } = Typography
 
 type Props = {
   baseUrl: string

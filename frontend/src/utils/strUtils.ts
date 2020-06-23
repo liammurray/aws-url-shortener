@@ -2,7 +2,7 @@ import Url from 'url-parse'
 import { format } from 'date-fns'
 
 export function formatDate(iso: string): string {
-  return format(new Date(iso), 'yyyy/MM/dd H:mma')
+  return format(new Date(iso), 'yyyy/MM/dd (h:mm a)')
 }
 
 export function makeUrl(url: string, path?: string): Url {
