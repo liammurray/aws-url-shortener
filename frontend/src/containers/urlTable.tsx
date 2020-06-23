@@ -68,7 +68,7 @@ export default class UrlTable extends React.Component<Props, State> {
             {url}
           </Tooltip>
         ),
-        ellipsis: true,
+        //ellipsis: true, <- enables ellipse on all column titles
         width: 400,
       },
       {
