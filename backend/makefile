@@ -8,7 +8,7 @@
 STACK_NAME=UrlShortener-dev
 PACKAGE_OUTPUT_BUCKET?=nod15c.lambda
 # Need export for sub-makes, i.e., $(MAKE)
-export MAKETOOLS?=$(realpath ../maketools)
+export MAKETOOLS?=$(realpath ../../maketools)
 GEN_DIR=./generated
 
 # To enable CDK for package/deploy of API:
