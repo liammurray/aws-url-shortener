@@ -124,7 +124,8 @@ export class StaticSite extends Construct {
     })
   }
   private output(name: string, value: string): void {
-    new cdk.CfnOutput(this, name, {
+    const stack = cdk.Stack.of(this)
+    new cdk.CfnOutput(stack, name, {
       value,
     })
   }

@@ -37,6 +37,14 @@ This takes time the first time.
 
 Deploy bucket content should be manually removed prior to this (so bucket can be deleted).
 
+Run script to delete bucket contents prior to delete (will prompt):
+
+```bash
+./cleanSiteBucket.sh
+```
+
+Remove stack:
+
 ```bash
 npm run cdk destory urlshort-site
 ```
