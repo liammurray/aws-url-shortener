@@ -1,6 +1,12 @@
-# Test webapp
+# URL Shortener
 
-Used to show Amplify integration
+Uses Amplify and Antd.
+
+Once the backend is deployed (Cognito and API) run the following to generate or update the Amplify config file based on outputs from the Cloudformation stacks. There are some naming assumptions.
+
+```bash
+./gen-amplify-config.py
+```
 
 # Setup
 

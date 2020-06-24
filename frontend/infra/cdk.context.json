@@ -1,0 +1,14 @@
+{
+  "@aws-cdk/core:enableStackNameDuplicates": "true",
+  "aws-cdk:enableDiffNoFail": "true",
+  "availability-zones:account=958019638877:region=us-west-2": [
+    "us-west-2a",
+    "us-west-2b",
+    "us-west-2c",
+    "us-west-2d"
+  ],
+  "hosted-zone:account=958019638877:domainName=nod15c.com.:region=us-west-2": {
+    "Id": "/hostedzone/Z2X325LEDJ47ON",
+    "Name": "nod15c.com."
+  }
+}

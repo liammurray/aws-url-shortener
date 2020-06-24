@@ -1,0 +1,54 @@
+{
+  "name": "infra",
+  "version": "0.1.0",
+  "bin": {
+    "infra": "src/main.js"
+  },
+  "scripts": {
+    "build": "npm run build:clean && npm run build:dist",
+    "build:clean": "rimraf dist",
+    "build:dist": "ttsc",
+    "lint": "npm run lint:eslint && npm run lint:mdlint",
+    "lint:eslint": "eslint --cache --ext .ts ./",
+    "lint:mdlint": "markdownlint .",
+    "test": "jest",
+    "cdk": "cdk"
+  },
+  "devDependencies": {
+    "@aws-cdk/assert": "^1.46.0",
+    "@types/eslint": "^7.2.0",
+    "@types/eslint-plugin-prettier": "^3.1.0",
+    "@types/jest": "^26.0.0",
+    "@types/node": "14.0.13",
+    "@types/prettier": "^2.0.1",
+    "@types/source-map-support": "^0.5.1",
+    "@typescript-eslint/eslint-plugin": "^3.4.0",
+    "@typescript-eslint/parser": "^3.4.0",
+    "aws-cdk": "1.46.0",
+    "eslint": "^7.3.1",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-jest": "^23.17.1",
+    "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^26.1.0",
+    "markdown-cli": "^1.6.0",
+    "markdownlint": "^0.20.3",
+    "markdownlint-cli": "^0.23.1",
+    "prettier": "^2.0.5",
+    "ts-jest": "^26.1.1",
+    "ts-node": "^8.10.2",
+    "ttypescript": "^1.5.10",
+    "typescript": "~3.9.5",
+    "typescript-transform-paths": "^1.1.14"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-certificatemanager": "^1.46.0",
+    "@aws-cdk/aws-cloudfront": "^1.46.0",
+    "@aws-cdk/aws-route53": "^1.46.0",
+    "@aws-cdk/aws-route53-targets": "^1.46.0",
+    "@aws-cdk/aws-s3": "^1.46.0",
+    "@aws-cdk/aws-s3-deployment": "^1.46.0",
+    "@aws-cdk/core": "1.46.0",
+    "aws-sdk": "^2.703.0",
+    "source-map-support": "^0.5.19"
+  }
+}
