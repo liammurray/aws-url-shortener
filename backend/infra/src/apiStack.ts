@@ -8,7 +8,6 @@ import * as certman from '@aws-cdk/aws-certificatemanager'
 import {
   EndpointType,
   CfnAuthorizer,
-  LambdaIntegration,
   AuthorizationType,
 } from '@aws-cdk/aws-apigateway'
 import { addCorsOptions } from './apiGatewayUtils'

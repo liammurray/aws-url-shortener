@@ -18,6 +18,7 @@ parserOptions:
 root: true
 plugins:
   - '@typescript-eslint'
+  - prettier
 rules:
   quotes:
     - error
