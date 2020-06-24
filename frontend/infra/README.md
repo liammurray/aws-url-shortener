@@ -28,7 +28,17 @@ npm run test -- -u
 Build code so `../code/build` exists.
 
 ```bash
-npm run cdk deploy
+npm run cdk deploy urlshort-site
+```
+
+This takes time the first time.
+
+## Destroy
+
+Deploy bucket content should be manually removed prior to this (so bucket can be deleted).
+
+```bash
+npm run cdk destory urlshort-site
 ```
 
 ## TODO
@@ -47,3 +57,7 @@ CodeBuild project
     1.  cfn deploy output.json (from prev step)
 
 The synth/deploy can be used for CodePipeline approval (prod), e.g.
+
+```
+
+```
