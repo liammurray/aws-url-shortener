@@ -10,15 +10,6 @@ type Props = {
   result: CreateResult
 }
 
-// export type CreateCode = 'created' | 'aliasExists' | 'aliasInvalid' | 'urlInvalid'
-
-// export type CreateResult = {
-//   code: CreateCode
-//   msg?: string
-//   id?: string
-//   url: string
-// }
-
 const ErrorResult = (result: CreateResult): JSX.Element => {
   return <Result status="error" title="Submission Failed" subTitle={result.msg || result.code} />
 }

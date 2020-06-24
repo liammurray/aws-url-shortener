@@ -2,6 +2,11 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import * as serviceWorker from './serviceWorker'
 import AppWithAuth from './appWithAuth'
+import Amplify from 'aws-amplify'
+import config from './amplify/config'
+
+// import Amplify, * as AmplifyModules from 'aws-amplify';
+Amplify.configure(config)
 
 ReactDOM.render(
   <React.StrictMode>

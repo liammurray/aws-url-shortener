@@ -14,6 +14,7 @@ export default function App(): JSX.Element {
     <div className="App">
       <Layout>
         <h1 className="Title">Url Shortener</h1>
+
         <Content>
           <UrlSubmitForm urlsApi={urlsApi} />
           <UrlTable urlsApi={urlsApi} />

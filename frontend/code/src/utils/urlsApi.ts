@@ -1,4 +1,4 @@
-import Amplify from 'aws-amplify'
+import { Auth, API } from 'aws-amplify'
 
 export const MIN_ALIAS_LENGTH = 6
 export const MAX_ALIAS_LENGTH = 64
@@ -34,6 +34,22 @@ export function isValidUrl(str: string): boolean {
   return httpUrlSchemeRegex.test(str)
 }
 
+// TODO: recreate api client when token changes, store as class member
+async function getTokenForCurrentUser() {
+  const user = await Auth.currentAuthenticatedUser()
+  return user.signInUserSession.idToken.jwtToken
+}
+
+/**
+ * API client for access to backend URLs API, using Amplify to call API
+ *
+ * An alternative approach:
+ *   Generate typescript client
+ *   Add amplify headers
+ * That way types such as UrlEntry would come from the generated client and
+ * we can version client tied to API.
+ *
+ */
 export default class UrlsApi {
   public readonly baseUrl
 
@@ -42,7 +58,9 @@ export default class UrlsApi {
   }
 
   public async createShortLink(url: string, alias?: string): Promise<CreateResult> {
-    const session = await Amplify.Auth.currentSession()
+    const token = await getTokenForCurrentUser()
+    console.log(`Token: ${JSON.stringify(token, null, 2)}`)
+
     const request = {
       queryStringParameters: {
         url,
@@ -51,15 +69,16 @@ export default class UrlsApi {
       body: {},
       headers: {
         // If no auth header call will be signed using currentUserCredentials
-        Authorization: session.idToken.jwtToken,
+        Authorization: token,
         'Content-Type': 'application/json',
       },
     }
-    return Amplify.API.post(this.apiName, '/', request)
+    return API.post(this.apiName, '/', request)
   }
 
   public async getUrls(): Promise<UrlEntry[]> {
-    const session = await Amplify.Auth.currentSession()
+    const token = await getTokenForCurrentUser()
+
     const request = {
       queryStringParameters: {
         limit: 5,
@@ -67,11 +86,11 @@ export default class UrlsApi {
       body: {},
       headers: {
         // If no auth header call will be signed using currentUserCredentials
-        Authorization: session.idToken.jwtToken,
+        Authorization: token,
         'Content-Type': 'application/json',
       },
     }
-    const res = await Amplify.API.get(this.apiName, '/', request)
+    const res = await API.get(this.apiName, '/', request)
     return res.items
   }
 }

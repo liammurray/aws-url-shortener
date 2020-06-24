@@ -1,16 +1,11 @@
-import Amplify from 'aws-amplify'
-
+import React from 'react'
 import {
   AmplifyAuthenticator,
   AmplifySignOut,
   AmplifySignIn,
   AmplifySignUp,
 } from '@aws-amplify/ui-react'
-import React from 'react'
-import config from './amplify/config'
 import App from './app'
-
-Amplify.configure(config)
 
 class AppWithAuth extends React.Component {
   // https://docs.amplify.aws/ui/auth/authenticator/q/framework/react
