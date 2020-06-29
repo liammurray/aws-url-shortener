@@ -3,7 +3,7 @@ import { Auth, API } from 'aws-amplify'
 export const MIN_ALIAS_LENGTH = 6
 export const MAX_ALIAS_LENGTH = 64
 export const MAX_URL_LENGTH = 1024
-export const ALIAS_REGEX = /^\w+$/
+export const ALIAS_REGEX = /^[\w-]+$/
 
 export type CreateCode = 'created' | 'aliasExists' | 'aliasInvalid' | 'urlInvalid'
 

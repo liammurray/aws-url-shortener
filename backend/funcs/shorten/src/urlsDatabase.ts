@@ -24,11 +24,18 @@ const MAX_ALIAS_LENGTH = 64
 const ID_COUNTER = 'counter'
 const INIT_COUNTER_VALUE = 1000
 const MAX_URL_LENGTH = 1024
-const ALIAS_REGEX = /^\w+$/
+const ALIAS_REGEX = /^[\w-]+$/
+
+export function isValidAlias(str: string): boolean {
+  if (str.length < MIN_ALIAS_LENGTH || str.length > MAX_ALIAS_LENGTH) {
+    return false
+  }
+  return ALIAS_REGEX.test(str)
+}
 
 const httpUrlSchemeRegex = /^https?:\/\/.+/
 
-function isValidUrl(str: string): boolean {
+export function isValidUrl(str: string): boolean {
   if (str.length > MAX_URL_LENGTH) {
     return false
   }
@@ -215,10 +222,10 @@ export class UrlsDatabase {
       }
     }
 
-    if (!ALIAS_REGEX.test(alias)) {
+    if (!isValidAlias(alias)) {
       return {
         code: 'aliasInvalid',
-        msg: `Alias must contain only letters, numbers or underscores`,
+        msg: `Alias must contain only letters, numbers, dashes or underscores`,
         id: alias,
         url,
       }

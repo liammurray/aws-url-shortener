@@ -5,11 +5,7 @@ import * as lambda from '@aws-cdk/aws-lambda'
 import * as logs from '@aws-cdk/aws-logs'
 import * as route53 from '@aws-cdk/aws-route53'
 import * as certman from '@aws-cdk/aws-certificatemanager'
-import {
-  EndpointType,
-  CfnAuthorizer,
-  AuthorizationType,
-} from '@aws-cdk/aws-apigateway'
+import { EndpointType, CfnAuthorizer, AuthorizationType } from '@aws-cdk/aws-apigateway'
 import { addCorsOptions } from './apiGatewayUtils'
 import * as path from 'path'
 import { resolveSsm } from '@liammurray/cdk-common'
@@ -75,6 +71,7 @@ export default class ApiStack extends cdk.Stack {
       },
       domainName: {
         certificate,
+        // u.nod15c.com
         domainName: dnsName,
         endpointType: EndpointType.REGIONAL,
       },
